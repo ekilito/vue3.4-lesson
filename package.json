@@ -1,0 +1,20 @@
+{
+  "name": "vue3.4-lesson",
+  "private": "true",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js reactivity -f esm"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "devDependencies": {
+    "esbuild": "^0.20.2",
+    "minimist": "^1.2.8",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,3 @@
+# 告诉所有仓库管理在 packages 下面
+packages:
+  - 'packages/*'
