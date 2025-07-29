@@ -1,26 +1,8 @@
 import { isObject } from "@vue/shared";
+import { mutableHandlers, ReactiveFlags } from './baseHandler';
 
 // 用于记录 代理后 的结果， 可以复用
 const reactiveMap = new WeakMap();
-
-enum ReactiveFlags {
-  IS_REACTIVE = '__v_isReactive' // 基本上唯一
-}
-
-const mutableHandlers: ProxyHandler<any> = {
-  get(target, key, recevier) {
-    if(key === ReactiveFlags.IS_REACTIVE) {
-      return true
-    }
-  },
-  set(target, key, value, recevier) {
-    return true;
-  },
-};
-
-export const reactive = (target) => {
-  return createReactiveObject(target);
-};
 
 const createReactiveObject = (target) => {
   // 统一做判断，响应式对象必须是对象才可以
@@ -44,3 +26,6 @@ const createReactiveObject = (target) => {
   return proxy;
 };
 
+export const reactive = (target) => {
+  return createReactiveObject(target);
+};

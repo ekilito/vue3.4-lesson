@@ -3,21 +3,21 @@ function isObject(value) {
   return typeof value === "object" && value !== null;
 }
 
-// packages/reactivity/src/reactive.ts
-var reactiveMap = /* @__PURE__ */ new WeakMap();
+// packages/reactivity/src/baseHandler.ts
 var mutableHandlers = {
   get(target, key, recevier) {
     if (key === "__v_isReactive" /* IS_REACTIVE */) {
       return true;
     }
+    return Reflect.get(target, key, recevier);
   },
   set(target, key, value, recevier) {
-    return true;
+    return Reflect.set(target, key, value, recevier);
   }
 };
-var reactive = (target) => {
-  return createReactiveObject(target);
-};
+
+// packages/reactivity/src/reactive.ts
+var reactiveMap = /* @__PURE__ */ new WeakMap();
 var createReactiveObject = (target) => {
   if (!isObject(target)) {
     return target;
@@ -32,6 +32,9 @@ var createReactiveObject = (target) => {
   let proxy = new Proxy(target, mutableHandlers);
   reactiveMap.set(target, proxy);
   return proxy;
+};
+var reactive = (target) => {
+  return createReactiveObject(target);
 };
 
 // packages/reactivity/src/effect.ts

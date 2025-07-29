@@ -14,22 +14,17 @@
     // effect 副作用 数据变化之后可以让effect 重新执行
     import { reactive, effect } from "./reactivity.js";
 
-    const data = { name: "wdl", age: 18 };
+    const state = reactive({ name: "wdl", age: 18 });
 
-    const state1 = reactive(data);
-    // 如果 state1 被代理过后，一定有 get set
-    const state2 = reactive(state1);
-    console.log(state1 === state2); // treu
+    console.log(state);
 
-    // console.log(state)
+    effect(() => {
+      app.innerHTML = `age: ${state.age}`;
+    });
 
-    // effect(() => {
-    //   app.innerHTML = `age: ${state.age}`
-    // })
-
-    // setTimeout(() => {
-    //   state.age++ // 数据变化后 effect 会再次重新执行
-    // }, 1000);
+    setTimeout(() => {
+      state.age++; // 数据变化后 effect 会再次重新执行
+    }, 1000);
   </script>
 </body>
 
