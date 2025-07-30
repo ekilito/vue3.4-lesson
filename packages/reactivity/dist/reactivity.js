@@ -42,6 +42,8 @@ var ReactiveEffect = class {
     // 记录存放了哪些依赖
     this._depsLength = 0;
     // 存放依赖数组的个数
+    this._running = 0;
+    // 是否正在运行
     this.active = true;
   }
   run() {
@@ -52,8 +54,10 @@ var ReactiveEffect = class {
     try {
       activeEffect = this;
       preCleanEffect(this);
+      this._running++;
       return this.fn();
     } finally {
+      this._running--;
       postCleanEffect(this);
       activeEffect = lastEffect;
     }
@@ -84,8 +88,10 @@ var cleanDepEffect = (oldDep, effect2) => {
 };
 var triggerEffects = (dep) => {
   for (const effect2 of dep.keys()) {
-    if (effect2.scheduler) {
-      effect2.scheduler();
+    if (!effect2._running) {
+      if (effect2.scheduler) {
+        effect2.scheduler();
+      }
     }
   }
 };
@@ -113,7 +119,6 @@ var track = (target, key) => {
       );
     }
     trackEffect(activeEffect, dep);
-    console.log("targetMap:", targetMap);
   }
 };
 var trigger = (target, key, newValue, oldValue) => {
@@ -133,11 +138,16 @@ var mutableHandlers = {
     if (key === "__v_isReactive" /* IS_REACTIVE */) {
       return true;
     }
+    console.log("\u6536\u96C6\u4F9D\u8D56", target, key);
     track(target, key);
-    return Reflect.get(target, key, recevier);
+    let res = Reflect.get(target, key, recevier);
+    if (isObject(res)) {
+      return reactive(res);
+    }
+    return res;
   },
   set(target, key, value, recevier) {
-    console.log("\u89E6\u53D1\u66F4\u65B0");
+    console.log("\u89E6\u53D1\u66F4\u65B0", target, key, value);
     let oldValue = target[key];
     let result = Reflect.set(target, key, value, recevier);
     if (oldValue !== value) {

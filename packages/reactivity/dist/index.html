@@ -14,23 +14,33 @@
     // effect 副作用 数据变化之后可以让effect 重新执行
     import { reactive, effect } from "./reactivity.js";
 
-    const state = reactive({ name: "wdl", age: 18, flag: true });
+    const state = reactive({ name: "wdl", age: 18, flag: true, nickName: { a: 'kilito' } });
 
     // {obj}: {flag : {effect} , name: {effect}}
     // {obj}: {flag : {effect} , name: {effect} , age: {effect}}
 
-    let runner = effect(() => {
-      app.innerHTML = `age: ${state.age}`;
-      // app.innerHTML = state.flag ? state.name : state.age
-    }, {
-      scheduler: () => {
-        console.log('数据更新了，不重新渲染，走自己的逻辑') // AOP
-        runner()
-      }
-    });
+    // let runner = effect(() => {
+    //   app.innerHTML = `age: ${state.age}`;
+    //   // app.innerHTML = state.flag ? state.name : state.age
+    // }, {
+    //   scheduler: () => {
+    //     console.log('数据更新了，不重新渲染，走自己的逻辑') // AOP
+    //     runner()
+    //   }
+    // });
+
+    // effect(() => {
+    //   app.innerHTML = `name: ${state.name}`;
+    //   state.name = Math.random()
+    //   // 如果本次在执行effect的时候，更新了数据， 不会再触发 effect 更新
+    // })
+    effect(() => {
+      console.log('执行了？次')
+      app.innerHTML = `name: ${state.name}`;
+    })
 
     setTimeout(() => {
-      state.age++; // 数据变化后 effect 会再次重新执行
+      state.name = 'kilito'; // 数据变化后 effect 会再次重新执行
       // state.flag = false
     }, 1000);
 

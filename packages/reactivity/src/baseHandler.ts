@@ -1,5 +1,7 @@
+import { isObject } from '@vue/shared';
 import { activeEffect } from "./effect";
 import { track, trigger } from "./reactiveEffect";
+ import { reactive } from "./reactive";
 
 export enum ReactiveFlags {
   IS_REACTIVE = "__v_isReactive", // 基本上唯一
@@ -19,17 +21,25 @@ export const mutableHandlers: ProxyHandler<any> = {
     // 当取值的时候，应该让响应式属性 和 effect 映射起来
 
     // 依赖收集
+    console.log("收集依赖", target , key)
     // 收集这个对象上的这个属性，和 effect 关联在一起
     track(target, key);
     // console.log(activeEffect, key)
 
-    return Reflect.get(target, key, recevier);
+    let res = Reflect.get(target, key, recevier);
+    
+    // 当取的值也是对象的时候，需要对这个对象再进行代理，递归代理
+    if(isObject(res)) {
+      return reactive(res)
+    }
+
+    return res
   },
   set(target, key, value, recevier) {
     // 找到属性，让对应的 effect 重新执行
 
     // 触发更新
-    console.log("触发更新");
+    console.log("触发更新",target , key , value);
 
     let oldValue = target[key];
 

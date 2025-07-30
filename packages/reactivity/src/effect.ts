@@ -9,11 +9,11 @@ export const effect = (fn, options?) => {
 
   _effect.run();
 
-  if(options) {
-    Object.assign(_effect, options) // 用用户传递的覆盖掉内置的
+  if (options) {
+    Object.assign(_effect, options); // 用用户传递的覆盖掉内置的
   }
 
-  const runner = _effect.run.bind(_effect)
+  const runner = _effect.run.bind(_effect);
   runner.effect = _effect; // 可以在run方法上获取到effect的引用
   return runner; // 外界可以自己让其重新 run
 };
@@ -43,6 +43,7 @@ class ReactiveEffect {
   _trackId = 0; // 用于记录当前 effect 执行了几次
   deps = []; // 记录存放了哪些依赖
   _depsLength = 0; // 存放依赖数组的个数
+  _running = 0; // 是否正在运行
 
   public active = true; // 默认创建的 effect 是响应式的
   // fn 用户编写的函数
@@ -60,9 +61,10 @@ class ReactiveEffect {
 
       // effect 重新执行前，需要将上一次的依赖清空 effect.deps
       preCleanEffect(this);
-
+      this._running++;
       return this.fn(); // 依赖收集 => state.age
     } finally {
+      this._running--;
       postCleanEffect(this);
       activeEffect = lastEffect;
     }
@@ -120,8 +122,11 @@ const cleanDepEffect = (oldDep, effect) => {
 
 export const triggerEffects = (dep) => {
   for (const effect of dep.keys()) {
-    if (effect.scheduler) {
-      effect.scheduler(); // effect.fun()
+    // 如果不是正在执行，才能执行
+    if (!effect._running) {
+      if (effect.scheduler) {
+        effect.scheduler(); // => effect.fun()
+      }
     }
   }
 };

@@ -35,7 +35,7 @@ export const track = (target, key) => {
     // 将当前的 effect 放入到 dep(映射表)中，后续可以根据值的变化触发此 dep 中存放的 effect
     trackEffect(activeEffect, dep)
 
-    console.log('targetMap:',targetMap)
+    // console.log('收集依赖:',targetMap)
   }
 // Map: {obj: {属性：Map: {effect, effect}}}
 // {
