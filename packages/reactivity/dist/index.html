@@ -16,8 +16,6 @@
 
     const state = reactive({ name: "wdl", age: 18 });
 
-    console.log(state);
-
     effect(() => {
       app.innerHTML = `age: ${state.age}`;
     });
