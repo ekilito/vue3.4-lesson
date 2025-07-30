@@ -9,7 +9,12 @@ var effect = (fn, options) => {
     _effect.run();
   });
   _effect.run();
-  return _effect;
+  if (options) {
+    Object.assign(_effect, options);
+  }
+  const runner = _effect.run.bind(_effect);
+  runner.effect = _effect;
+  return runner;
 };
 var activeEffect;
 var preCleanEffect = (effect2) => {

@@ -9,7 +9,13 @@ export const effect = (fn, options?) => {
 
   _effect.run();
 
-  return _effect;
+  if(options) {
+    Object.assign(_effect, options) // 用用户传递的覆盖掉内置的
+  }
+
+  const runner = _effect.run.bind(_effect)
+  runner.effect = _effect; // 可以在run方法上获取到effect的引用
+  return runner; // 外界可以自己让其重新 run
 };
 
 export let activeEffect;
