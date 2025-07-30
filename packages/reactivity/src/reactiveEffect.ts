@@ -1,4 +1,4 @@
-import { activeEffect, trackEffect } from "./effect";
+import { activeEffect, trackEffect, triggerEffects } from "./effect";
 
 // 存放依赖收集的关系
 const targetMap = new WeakMap();
@@ -35,10 +35,8 @@ export const track = (target, key) => {
     // 将当前的 effect 放入到 dep(映射表)中，后续可以根据值的变化触发此 dep 中存放的 effect
     trackEffect(activeEffect, dep)
 
-    console.log(targetMap)
+    console.log('收集依赖',targetMap)
   }
-};
-
 // Map: {obj: {属性：Map: {effect, effect}}}
 // {
 //   {name: 'wdl', age: 18} : {
@@ -50,3 +48,21 @@ export const track = (target, key) => {
 //     }
 //   }
 // }
+};
+
+
+
+export const trigger = (target , key , newValue , oldValue) => {
+   // 依赖收集器的映射表
+    const depsMap = targetMap.get(target)
+
+    // 找不到对象 直接return 即可
+    if(!depsMap) {
+      return
+    }
+
+   let dep = depsMap.get(key)
+   if(dep) { // 修改的属性对应了 effect
+     triggerEffects(dep)
+   }
+}

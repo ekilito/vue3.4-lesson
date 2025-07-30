@@ -51,3 +51,11 @@ export const trackEffect = (effect, dep) =>{
    effect.deps[effect._depsLength++] = dep
 
 }
+
+export const triggerEffects = (dep) => {
+  for(const effect of dep.keys()) {
+    if(effect.scheduler) {
+      effect.scheduler();  // effect.fun()
+    }
+  }
+}
