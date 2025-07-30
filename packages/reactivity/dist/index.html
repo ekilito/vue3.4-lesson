@@ -14,15 +14,32 @@
     // effect 副作用 数据变化之后可以让effect 重新执行
     import { reactive, effect } from "./reactivity.js";
 
-    const state = reactive({ name: "wdl", age: 18 });
+    const state = reactive({ name: "wdl", age: 18, flag: true });
+
+    // {obj}: {flag : {effect} , name: {effect}}
+    // {obj}: {flag : {effect} , name: {effect} , age: {effect}}
 
     effect(() => {
-      app.innerHTML = `age: ${state.age}`;
+      // app.innerHTML = `age: ${state.age}`;
+      console.log('effect')
+      app.innerHTML = state.flag ? state.name : state.age
     });
 
     setTimeout(() => {
-      state.age++; // 数据变化后 effect 会再次重新执行
+      // state.age++; // 数据变化后 effect 会再次重新执行
+      state.flag = false
+
+      setTimeout(() => {
+        console.log('修改属性后，不应该触发 effect 重新执行了')
+        state.name = 'kilito'
+      }, 1000);
     }, 1000);
+
+    // 我们需要一个算法，来对比不同分支切换的时候 的差异
+
+    // { flag , name }
+    // { flag , age}
+    // 简易 diff 算法
   </script>
 </body>
 

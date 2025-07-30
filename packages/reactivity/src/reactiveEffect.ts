@@ -14,7 +14,7 @@ export const createDep = (cleanup , key) => {
 export const track = (target, key) => {
   // activeEffect 有这个属性 说明这个key 是在 effect中访问的，没有 说明在effect 之外访问的 不用进行收集
   if (activeEffect) {
-    console.log(target, key, activeEffect);
+    // console.log(target, key, activeEffect);
 
     let depsMap = targetMap.get(target);
 
@@ -35,7 +35,7 @@ export const track = (target, key) => {
     // 将当前的 effect 放入到 dep(映射表)中，后续可以根据值的变化触发此 dep 中存放的 effect
     trackEffect(activeEffect, dep)
 
-    console.log('收集依赖',targetMap)
+    console.log('targetMap:',targetMap)
   }
 // Map: {obj: {属性：Map: {effect, effect}}}
 // {

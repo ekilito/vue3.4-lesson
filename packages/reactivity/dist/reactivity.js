@@ -12,6 +12,18 @@ var effect = (fn, options) => {
   return _effect;
 };
 var activeEffect;
+var preCleanEffect = (effect2) => {
+  effect2._depsLength = 0;
+  effect2._trackId++;
+};
+var postCleanEffect = (effect2) => {
+  if (effect2.deps.length > effect2._depsLength) {
+    for (let i = effect2._depsLength; i < effect2.deps.length, i++; ) {
+      cleanDepEffect(effect2.deps[i], effect2);
+    }
+    effect2.deps.length = effect2._depsLength;
+  }
+};
 var ReactiveEffect = class {
   // 默认创建的 effect 是响应式的
   // fn 用户编写的函数
@@ -34,8 +46,10 @@ var ReactiveEffect = class {
     let lastEffect = activeEffect;
     try {
       activeEffect = this;
+      preCleanEffect(this);
       return this.fn();
     } finally {
+      postCleanEffect(this);
       activeEffect = lastEffect;
     }
   }
@@ -44,8 +58,24 @@ var ReactiveEffect = class {
   }
 };
 var trackEffect = (effect2, dep) => {
-  dep.set(effect2, effect2._trackId);
-  effect2.deps[effect2._depsLength++] = dep;
+  if (dep.get(effect2) !== effect2._trackId) {
+    dep.set(effect2, effect2._trackId);
+    let oldDep = effect2.deps[effect2._depsLength];
+    if (oldDep !== dep) {
+      if (oldDep) {
+        cleanDepEffect(oldDep, effect2);
+      }
+      effect2.deps[effect2._depsLength++] = dep;
+    } else {
+      effect2._depsLength++;
+    }
+  }
+};
+var cleanDepEffect = (oldDep, effect2) => {
+  oldDep.delete(effect2);
+  if (oldDep.size == 0) {
+    oldDep.cleanup();
+  }
 };
 var triggerEffects = (dep) => {
   for (const effect2 of dep.keys()) {
@@ -65,7 +95,6 @@ var createDep = (cleanup, key) => {
 };
 var track = (target, key) => {
   if (activeEffect) {
-    console.log(target, key, activeEffect);
     let depsMap = targetMap.get(target);
     if (!depsMap) {
       targetMap.set(target, depsMap = /* @__PURE__ */ new Map());
@@ -79,7 +108,7 @@ var track = (target, key) => {
       );
     }
     trackEffect(activeEffect, dep);
-    console.log("\u6536\u96C6\u4F9D\u8D56", targetMap);
+    console.log("targetMap:", targetMap);
   }
 };
 var trigger = (target, key, newValue, oldValue) => {
