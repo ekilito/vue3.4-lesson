@@ -29,3 +29,8 @@ const createReactiveObject = (target) => {
 export const reactive = (target) => {
   return createReactiveObject(target);
 };
+
+// 主要做一件事，传reactive之后，把对象变成响应式的？
+// 核心 new Proxy 
+// 防止一个对象被重复的被代理 new WeakMap放到缓存里 取值的时候如果缓存里有 取来用 
+// 如果返回的代理对象再一次被代理 直接返回

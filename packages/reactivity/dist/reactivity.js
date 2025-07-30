@@ -33,6 +33,9 @@ var ReactiveEffect = class {
       activeEffect = lastEffect;
     }
   }
+  stop() {
+    this.active = false;
+  }
 };
 
 // packages/reactivity/src/reactiveEffect.ts
