@@ -10,31 +10,16 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    // ref 让数据变成响应式的
-    // effect 副作用 数据变化之后可以让effect 重新执行
-    import { ref, effect } from "./reactivity.js";
 
-    const flag = ref(true); // wrap(true)
+    import { ref, effect, reactive, toRef, toRefs } from "./reactivity.js";
 
-    console.log(flag.value);
+    const state = reactive({ name: "kilito", age: 18 });
 
-    effect(() => {
-      app.innerHTML = `flag: ${flag.value}`;
-    });
+    //const name = toRef(state, 'name'); // 还是基于proxy 来获取值
+    const { name, age } = toRefs(state);
 
-    setTimeout(() => {
-      flag.value = false; // 触发 effect 执行
-    }, 1000);
-
-    // let flag1 = {
-    //   _v: false,
-    //   get value() { // 收集 effect
-    //     return this._v;
-    //   },
-    //   set value(newValue) { // 更新 effect
-    //     this._v = newValue;
-    //   }
-    // }
+    // name.value => state.name
+    console.log(name.value);
   </script>
 </body>
 

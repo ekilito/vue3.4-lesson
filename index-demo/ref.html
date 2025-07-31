@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ref</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    // ref 让数据变成响应式的
+    // effect 副作用 数据变化之后可以让effect 重新执行
+    import { ref, effect } from "./reactivity.js";
+
+    const flag = ref(true); // wrap(true)
+
+    console.log(flag.value);
+
+    effect(() => {
+      app.innerHTML = `flag: ${flag.value}`;
+    });
+
+    setTimeout(() => {
+      flag.value = false; // 触发 effect 执行
+    }, 1000);
+
+    // let flag1 = {
+    //   _v: false,
+    //   get value() { // 收集 effect
+    //     return this._v;
+    //   },
+    //   set value(newValue) { // 更新 effect
+    //     this._v = newValue;
+    //   }
+    // }
+  </script>
+</body>
+
+</html>

@@ -47,3 +47,25 @@ const triggerRefValue = (ref) => {
     triggerEffects(dep);
   }
 };
+
+
+// toRef 
+export const toRef = (object, key) => {
+
+  return new ObjectRefImpl(object, key);
+};
+
+class ObjectRefImpl {
+  public __v_isRef = true; // 增加 ref 标识
+  constructor(public _object, public _key) {
+
+  }
+
+  get value() {
+    return this._object[this._key]; // 访问对象的属性
+  }
+
+  set value(newValue) {
+    this._object[this._key] = newValue; // 设置对象的属性
+  }
+}

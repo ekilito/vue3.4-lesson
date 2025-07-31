@@ -218,12 +218,30 @@ var triggerRefValue = (ref2) => {
     triggerEffects(dep);
   }
 };
+var toRef = (object, key) => {
+  return new ObjectRefImpl(object, key);
+};
+var ObjectRefImpl = class {
+  // 增加 ref 标识
+  constructor(_object, _key) {
+    this._object = _object;
+    this._key = _key;
+    this.__v_isRef = true;
+  }
+  get value() {
+    return this._object[this._key];
+  }
+  set value(newValue) {
+    this._object[this._key] = newValue;
+  }
+};
 export {
   activeEffect,
   effect,
   reactive,
   ref,
   toReactive,
+  toRef,
   trackEffect,
   triggerEffects
 };
