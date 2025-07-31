@@ -242,9 +242,26 @@ var toRefs = (object) => {
   }
   return result;
 };
+var proxyRefs = (objectWithRef) => {
+  return new Proxy(objectWithRef, {
+    get(target, key, receiver) {
+      const value = Reflect.get(target, key, receiver);
+      return value && value.__v_isRef ? value.value : value;
+    },
+    set(target, key, value, receiver) {
+      const oldValue = Reflect.get(target, key, receiver);
+      if (oldValue && oldValue.__v_isRef) {
+        return oldValue.value = value;
+      } else {
+        return Reflect.set(target, key, value, receiver);
+      }
+    }
+  });
+};
 export {
   activeEffect,
   effect,
+  proxyRefs,
   reactive,
   ref,
   toReactive,

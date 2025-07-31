@@ -80,3 +80,24 @@ export const toRefs = (object) => {
   }
   return result;
 };
+
+// proxyRefs
+export const proxyRefs = (objectWithRef) => {
+  return new Proxy(objectWithRef, {
+    get(target , key , receiver) {
+      const value = Reflect.get(target, key, receiver);
+      // 如果是 ref 类型，直接返回其 value
+      return value && value.__v_isRef ? value.value : value;
+    },
+
+    set(target, key, value, receiver) {
+      const oldValue = Reflect.get(target, key, receiver);
+      // 如果是 ref 类型，直接设置其 value
+      if (oldValue && oldValue.__v_isRef) {
+        return (oldValue.value = value);
+      } else {
+        return Reflect.set(target, key, value, receiver);
+      }
+    }
+  })
+}
