@@ -294,11 +294,13 @@ var ComputedRefImpl = class {
     this.setter = setter;
     this.effect = new ReactiveEffect(
       () => getter(this._value),
+      // 用户写的 fn: (() => state.name) （会访问 state.name, 变化之后 会执行第二个函数）
       () => {
         triggerRefValue(this);
       }
     );
   }
+  //  让计算属性收集对应的 effect
   get value() {
     if (this.effect.dirty) {
       this._value = this.effect.run();

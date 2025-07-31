@@ -135,7 +135,7 @@ const cleanDepEffect = (oldDep, effect) => {
   }
 };
 
-export const triggerEffects = (dep) => {
+export const triggerEffects = (dep) => { // dep:(name) => 收集计算属性 => 调用计算属性的 scheduler => 触发计算属性收集的effect
   for (const effect of dep.keys()) {
 
     // 如果当前这个值是不脏的，但是触发更新需要将值变为脏值
