@@ -34,3 +34,7 @@ export const reactive = (target) => {
 // 核心 new Proxy 
 // 防止一个对象被重复的被代理 new WeakMap放到缓存里 取值的时候如果缓存里有 取来用 
 // 如果返回的代理对象再一次被代理 直接返回
+
+export const toReactive = (value) => {
+  return isObject(value) ? reactive(value) : value;
+}
