@@ -69,3 +69,14 @@ class ObjectRefImpl {
     this._object[this._key] = newValue; // 设置对象的属性
   }
 }
+
+
+// toRefs
+export const toRefs = (object) => {
+  // 将对象的每个属性转换为 ref
+  const result = {};
+  for (const key in object) {
+    result[key] = toRef(object, key);
+  }
+  return result;
+};

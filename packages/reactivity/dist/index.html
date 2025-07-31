@@ -16,10 +16,16 @@
     const state = reactive({ name: "kilito", age: 18 });
 
     //const name = toRef(state, 'name'); // 还是基于proxy 来获取值
-    const { name, age } = toRefs(state);
+    // const { name, age } = toRefs(state);
 
     // name.value => state.name
-    console.log(name.value);
+    // console.log(name.value);
+
+    const proxy = proxyRefs({ ...toRefs(state) })
+
+    effect(() => {
+      console.log(proxy.name, proxy.age);
+    });
   </script>
 </body>
 

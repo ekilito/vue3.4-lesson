@@ -235,6 +235,13 @@ var ObjectRefImpl = class {
     this._object[this._key] = newValue;
   }
 };
+var toRefs = (object) => {
+  const result = {};
+  for (const key in object) {
+    result[key] = toRef(object, key);
+  }
+  return result;
+};
 export {
   activeEffect,
   effect,
@@ -242,6 +249,7 @@ export {
   ref,
   toReactive,
   toRef,
+  toRefs,
   trackEffect,
   triggerEffects
 };
