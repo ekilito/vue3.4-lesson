@@ -1,11 +1,8 @@
 import { isObject } from '@vue/shared';
 import { activeEffect } from "./effect";
 import { track, trigger } from "./reactiveEffect";
- import { reactive } from "./reactive";
-
-export enum ReactiveFlags {
-  IS_REACTIVE = "__v_isReactive", // 基本上唯一
-}
+import { reactive } from "./reactive";
+import { ReactiveFlags } from "./constants";
 
 // proxy 需要搭配 Reflect 来使用
 // (Reflect 作用： 可以在代码执行的时候修改代码执行时候的行为)

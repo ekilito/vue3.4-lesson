@@ -34,13 +34,13 @@ class RefImpl {
   }
 }
 
-const trackRefValue = (ref) => {
+export const trackRefValue = (ref) => {
   if (activeEffect) {
     trackEffect(activeEffect, (ref.dep = createDep(() => (ref.dep = undefined), "undefined")));
   }
 };
 
-const triggerRefValue = (ref) => {
+export const triggerRefValue = (ref) => {
   let dep = ref.dep;
   if (dep) {
     // 触发依赖更新

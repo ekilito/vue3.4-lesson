@@ -1,3 +1,5 @@
+import { DirtyLevels } from './constants';
+
 export const effect = (fn, options?) => {
   // 创建一个响应式 effect 数据变化后可以重新执行
 
@@ -39,17 +41,30 @@ const postCleanEffect = (effect) => {
 };
 
 // effectScope.stop() 停止所有的effect 不参加响应式处理
-class ReactiveEffect {
+export class ReactiveEffect {
   _trackId = 0; // 用于记录当前 effect 执行了几次
   deps = []; // 记录存放了哪些依赖
   _depsLength = 0; // 存放依赖数组的个数
   _running = 0; // 是否正在运行
+  _dirtyLevel = DirtyLevels.Dirty; // 默认是脏的，意味着需要重新执行 fn
 
   public active = true; // 默认创建的 effect 是响应式的
   // fn 用户编写的函数
   // 如果 fn 中依赖的数据发生变化后，需要重新调用 => run()
   constructor(public fn, public scheduler) {}
+
+  public get dirty() {
+    // 如果是脏的，意味着需要重新执行 fn
+    return this._dirtyLevel === DirtyLevels.Dirty;
+  }
+  public set dirty(value) {
+    // 设置脏值
+    this._dirtyLevel = value ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
+  }
+  
   run() {
+    this._dirtyLevel = DirtyLevels.NoDirty; // 每次运行后effect 变为no_dirty
+
     // 让 fn 执行
     if (!this.active) {
       // 不是激活的，执行后，什么都不用做 不用做额外的处理
@@ -122,6 +137,12 @@ const cleanDepEffect = (oldDep, effect) => {
 
 export const triggerEffects = (dep) => {
   for (const effect of dep.keys()) {
+
+    // 如果当前这个值是不脏的，但是触发更新需要将值变为脏值
+    if(effect._dirtyLevel < DirtyLevels.Dirty) {
+      effect._dirtyLevel = DirtyLevels.Dirty; // 变为脏值
+    }
+
     // 如果不是正在执行，才能执行
     if (!effect._running) {
       if (effect.scheduler) {
