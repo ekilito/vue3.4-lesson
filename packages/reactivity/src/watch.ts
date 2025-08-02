@@ -79,5 +79,11 @@ const doWatch = (source, cb, { deep, immediate }) => {
     // watchEffect
     effect.run(); // 直接执行即可
   }
+
+  const unwatch = () => {
+    effect.stop();
+  }
+
+  return unwatch;
 };
 

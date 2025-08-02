@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>watch</title>
+  <title>ref</title>
 </head>
 
 <body>
@@ -22,25 +22,23 @@
     //   watchEffect,
     // } from "/node_modules/vue/dist/vue.esm-browser.js";
 
-    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed, watch } from "./reactivity.js";
+    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed, watch, watchEffect } from "./reactivity.js";
 
     const state = reactive({ name: "wdl", age: 18 });
 
-    // state
-    // () => state.name
-    const unwatch = watch(
-      () => state.name,
-      (newValue, oldValue) => {
-        console.log("state changed", newValue, oldValue); // kilito wdl
-      },
-      { deep: true, immediate: true },
-    );
 
-    unwatch();
+    // 分页 axios.get(/xxx/pageSize=${pageSize.value}&pageNum=${pageNum.value})
+
+    // effect => reactiveEffect(getter, getter)
+    watchEffect(() => {
+      console.log(state.name + state.age);
+    });
 
     setTimeout(() => {
-      state.name = "kilito";
-    }, 2000);
+      state.name = "kilito"
+    }, 2000)
+
+
   </script>
 </body>
 

@@ -77,7 +77,11 @@ var ReactiveEffect = class {
     }
   }
   stop() {
-    this.active = false;
+    if (this.active) {
+      this.active = false;
+      preCleanEffect(this);
+      postCleanEffect(this);
+    }
   }
 };
 var trackEffect = (effect2, dep) => {
@@ -376,6 +380,10 @@ var doWatch = (source, cb, { deep, immediate }) => {
   } else {
     effect2.run();
   }
+  const unwatch = () => {
+    effect2.stop();
+  };
+  return unwatch;
 };
 export {
   ReactiveEffect,
