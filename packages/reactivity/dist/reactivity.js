@@ -231,7 +231,7 @@ var RefImpl = class {
 };
 var trackRefValue = (ref2) => {
   if (activeEffect) {
-    trackEffect(activeEffect, ref2.dep = createDep(() => ref2.dep = void 0, "undefined"));
+    trackEffect(activeEffect, ref2.dep = ref2.dep || createDep(() => ref2.dep = void 0, "undefined"));
   }
 };
 var triggerRefValue = (ref2) => {
@@ -359,10 +359,20 @@ var doWatch = (source, cb, { deep, immediate }) => {
     getter = () => source();
   }
   let oldValue;
+  let clean;
+  const onCleanup = (fn) => {
+    clean = () => {
+      fn();
+      clean = null;
+    };
+  };
   const job = () => {
     if (cb) {
       const newValue = effect2.run();
-      cb(newValue, oldValue);
+      if (clean) {
+        clean();
+      }
+      cb(newValue, oldValue, onCleanup);
       oldValue = newValue;
     } else {
       effect2.run();

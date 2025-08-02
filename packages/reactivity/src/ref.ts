@@ -36,7 +36,7 @@ class RefImpl {
 
 export const trackRefValue = (ref) => {
   if (activeEffect) {
-    trackEffect(activeEffect, (ref.dep = createDep(() => (ref.dep = undefined), "undefined")));
+    trackEffect(activeEffect, (ref.dep = ref.dep || createDep(() => (ref.dep = undefined), "undefined")));
   }
 };
 

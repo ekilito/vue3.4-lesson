@@ -55,10 +55,26 @@ const doWatch = (source, cb, { deep, immediate }) => {
 
   let oldValue;
 
+  let clean;
+  const onCleanup = (fn) => {
+    // 将清理函数保存起来
+    clean = () => {
+      fn();
+      clean = null; // 清理掉
+    };
+  };
+
+
   const job = () => {
     if (cb) {
       const newValue = effect.run();
-      cb(newValue, oldValue);
+
+      if (clean) {
+        // 如果有清理函数，先执行清理函数
+        clean(); // 在执行回调前，先调用上一次的清理操作进行清理
+      }
+
+      cb(newValue, oldValue, onCleanup);
       oldValue = newValue;
     } else {
       // watchEffect

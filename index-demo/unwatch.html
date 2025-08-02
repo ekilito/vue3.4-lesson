@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>watch</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    // import {
+    //   ref,
+    //   effect,
+    //   reactive,
+    //   toRef,
+    //   toRefs,
+    //   proxyRefs,
+    //   computed,
+    //   watch,
+    //   watchEffect,
+    // } from "/node_modules/vue/dist/vue.esm-browser.js";
+
+    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed, watch } from "./reactivity.js";
+
+    const state = reactive({ name: "wdl", age: 18 });
+
+    // state
+    // () => state.name
+    const unwatch = watch(
+      () => state.name,
+      (newValue, oldValue, onCleanup) => {
+        console.log("watch =>", newValue, oldValue); // kilito wdl
+      },
+      { deep: true, immediate: true },
+    );
+
+    unwatch();
+
+    setTimeout(() => {
+      state.name = "kilito1";
+      state.name = "kilito2";
+    }, 1000);
+  </script>
+</body>
+
+</html>
