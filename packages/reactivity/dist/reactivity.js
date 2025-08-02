@@ -325,6 +325,9 @@ var ComputedRefImpl = class {
 var watch = (source, cb, options = {}) => {
   return doWatch(source, cb, options);
 };
+var watchEffect = (getter, options = {}) => {
+  return doWatch(getter, null, options);
+};
 var traverse = (source, depth, currentDepth = 0, seen = /* @__PURE__ */ new Set()) => {
   if (!isObject(source)) {
     return source;
@@ -355,9 +358,13 @@ var doWatch = (source, cb, { deep, immediate }) => {
   }
   let oldValue;
   const job = () => {
-    const newValue = effect2.run();
-    cb(newValue, oldValue);
-    oldValue = newValue;
+    if (cb) {
+      const newValue = effect2.run();
+      cb(newValue, oldValue);
+      oldValue = newValue;
+    } else {
+      effect2.run();
+    }
   };
   const effect2 = new ReactiveEffect(getter, job);
   if (cb) {
@@ -367,6 +374,7 @@ var doWatch = (source, cb, { deep, immediate }) => {
       oldValue = effect2.run();
     }
   } else {
+    effect2.run();
   }
 };
 export {
@@ -386,6 +394,7 @@ export {
   trackRefValue,
   triggerEffects,
   triggerRefValue,
-  watch
+  watch,
+  watchEffect
 };
 //# sourceMappingURL=reactivity.js.map

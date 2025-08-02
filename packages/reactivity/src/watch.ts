@@ -8,6 +8,11 @@ export const watch = (source, cb, options = {} as any) => {
   return doWatch(source, cb, options);
 };
 
+export const watchEffect = (getter, options = {}) => {
+  // 没有 cb 就是 watchEffect
+  return doWatch(getter, null, options as any);
+};
+
 // 控制 depth 已经当前遍历到了哪一层
 const traverse = (source, depth, currentDepth = 0, seen = new Set()) => {
   if (!isObject(source)) {
@@ -51,21 +56,28 @@ const doWatch = (source, cb, { deep, immediate }) => {
   let oldValue;
 
   const job = () => {
-    const newValue = effect.run();
-    cb(newValue, oldValue);
-    oldValue = newValue;
+    if (cb) {
+      const newValue = effect.run();
+      cb(newValue, oldValue);
+      oldValue = newValue;
+    } else {
+      // watchEffect
+      effect.run(); // 直接执行即可
+    }
   };
 
   const effect = new ReactiveEffect(getter, job);
 
   if (cb) {
-    if (immediate) { // 立即先执行一次用户的回调，传递新值和老值
+    if (immediate) {
+      // 立即先执行一次用户的回调，传递新值和老值
       job();
     } else {
       oldValue = effect.run();
     }
   } else {
     // watchEffect
+    effect.run(); // 直接执行即可
   }
 };
 

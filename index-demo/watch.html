@@ -22,20 +22,21 @@
     //   watchEffect,
     // } from "/node_modules/vue/dist/vue.esm-browser.js";
 
-    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed, watch, watchEffect } from "./reactivity.js";
+    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed, watch } from "./reactivity.js";
 
-    const state = reactive({ name: "wdl", age: 18 });
+    const state = reactive({ name: "wdl", age: 18, address: { n: 1 } });
 
+    const name = ref("wdl");
 
-    // 分页 axios.get(/xxx/pageSize=${pageSize.value}&pageNum=${pageNum.value})
-
-    // effect => reactiveEffect(getter, getter)
-    watchEffect(() => {
-      console.log(state.name + state.age);
-    });
+    // state
+    // () => state.name
+    watch(name, (newValue, oldValue) => {
+      console.log("state changed", newValue, oldValue); // kilito wdl
+    },
+      { deep: true, immediate: true });
 
     setTimeout(() => {
-      state.name = "kilito"
+      name.value = "kilito"
     }, 2000)
 
 
