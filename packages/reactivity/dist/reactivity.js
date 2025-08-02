@@ -57,6 +57,8 @@ var ReactiveEffect = class {
   set dirty(value) {
     this._dirtyLevel = value ? 4 /* Dirty */ : 0 /* NoDirty */;
   }
+  // 脏的 => 获取最新的值 => 不脏的 (缓存结果)
+  // 多次取值 （缓存结果）
   run() {
     this._dirtyLevel = 0 /* NoDirty */;
     if (!this.active) {

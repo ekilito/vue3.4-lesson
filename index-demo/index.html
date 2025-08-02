@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ref</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    // import {
+    //   ref,
+    //   effect,
+    //   reactive,
+    //   toRef,
+    //   toRefs,
+    //   proxyRefs,
+    //   computed,
+    // } from "/node_modules/@vue/reactivity/dist/reactivity.esm-browser.js";
+
+    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed } from "./reactivity.js";
+
+    // computed 计算属性
+    // computed 执行后的结果是一个ref 不可变的
+
+    const state = reactive({ name: "wdl" });
+
+    // dirty => true
+    // const aliasName = computed(() => {
+    //   console.log("computed");
+    //   return state.name + " alias";
+    // });
+    const aliasName = computed({
+      get: (oldValue) => {
+        // 可以通过 aliasName.value = "new value" 来修改值
+        console.log("computed:", oldValue);
+        return state.name + " **";
+      },
+      set: (value) => {
+        console.log("set aliasName:", value);
+      },
+    });
+
+    // 多次方位次属性 只会执行一次
+    effect(() => { // template
+      console.log(aliasName.value);
+      console.log(aliasName.value);
+      console.log(aliasName.value);
+    });
+
+    setTimeout(() => {
+      state.name = "wdl kilito";
+      // aliasName.value = "xxx"
+    }, 1000);
+
+    // 描述实现原理
+    // 1. 计算属性维护了一个 dirty 属性，默认就是 true，稍后运行过一次后会将 dirty 变为 false，并且稍后依赖的值发生变化后会再次让dirty 变为 true
+    // 2. 计算属性也是一个 effect，依赖的属性会收集这个计算属性，当值变化后，会让computedEffect 里面dirty 变为 true
+    // 3. 计算属性具备收集能力的，可以收集对应的 effect，依赖的值变化后会触发 effect重新执行
+
+    // 计算属性 aliasName，计算属性依赖的值是 name
+    // 计算属性本身就是一个 effect，有一个标识 dirty = true，访问的时候会，触发 name属性的get 方法（依赖收集）
+    // 将 name属性和计算属性做一个映射，稍后name 变化后会触发计算属性的 scheduler
+    // 计算属性可能在 effect中使用，当取计算属性的时候，会对当前的effect 进行依赖收集
+    // 如果 name 属性变化了，会通知计算属性的 dirty 变为 true (触发计算属性收集的 effect)
+    // dep:(name) => 收集计算属性 => 调用计算属性的 scheduler => 触发计算属性收集的effect
+
+    /*
+    {
+      {name: 'wdl'}: {
+        name: {
+          effect: {计算属性effect}
+        }
+      }
+    }
+    计算属性 = {
+      渲染effect
+    }
+      */
+  </script>
+</body>
+
+</html>

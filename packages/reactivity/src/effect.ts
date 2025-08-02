@@ -62,6 +62,9 @@ export class ReactiveEffect {
     this._dirtyLevel = value ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
   }
   
+  // 脏的 => 获取最新的值 => 不脏的 (缓存结果)
+  // 多次取值 （缓存结果）
+
   run() {
     this._dirtyLevel = DirtyLevels.NoDirty; // 每次运行后effect 变为no_dirty
 
@@ -139,6 +142,7 @@ export const triggerEffects = (dep) => { // dep:(name) => 收集计算属性 => 
   for (const effect of dep.keys()) {
 
     // 如果当前这个值是不脏的，但是触发更新需要将值变为脏值
+    // 属性依赖了计算属性，需要让计算属性的 dirty 在变为 true
     if(effect._dirtyLevel < DirtyLevels.Dirty) {
       effect._dirtyLevel = DirtyLevels.Dirty; // 变为脏值
     }
