@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>watch</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    // import {
+    //   ref,
+    //   effect,
+    //   reactive,
+    //   toRef,
+    //   toRefs,
+    //   proxyRefs,
+    //   computed,
+    //   watch,
+    //   watchEffect,
+    // } from "/node_modules/vue/dist/vue.esm-browser.js";
+
+    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed, watch } from "./reactivity.js";
+
+    const val = ref("");
+
+    const getData = (timer) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(timer);
+        }, timer);
+      });
+    };
+
+    let timer = 3000;
+    // let queue = []
+
+    watch(
+      val,
+      async (newVal, oldVal, onCleanup) => {
+        console.log("watch触发了", newVal, oldVal);
+        // 闭包
+        // 第二次执行的，会将第一次的 flag 变为 false
+        let flag = true;
+        // for (let i = 0; i < queue.length; i++) {
+        //   queue[i]();
+        // }
+        // queue.push(() => (flag = false))
+        timer -= 1000; // 每次调用watch时，timer会减少1s
+
+        onCleanup(() => {
+          flag = false; // 清理函数，取消上一次的请求
+          console.log("清理函数被调用");
+        });
+
+        let res = await getData(timer);
+
+        if (flag) {
+          app.innerHTML = res;
+          console.log("请求结果:", res);
+        } else {
+          console.log("请求被取消");
+        }
+      },
+      {
+        flush: "sync", // 立即执行
+      },
+    );
+
+    // 第一次请求时是 2s 后返回的 2000 第二次请求1s后返回的是 1000 => ?
+    setTimeout(() => {
+      val.value = "a";
+      val.value = "b";
+    }, 1000);
+  </script>
+</body>
+
+</html>

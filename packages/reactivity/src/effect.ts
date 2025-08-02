@@ -22,23 +22,20 @@ export const effect = (fn, options?) => {
 
 export let activeEffect;
 
-const preCleanEffect = (effect) => {
+function preCleanEffect(effect) {
   effect._depsLength = 0;
-  effect._trackId++; // 每次执行id都是加1，如果当前同一个 effect 执行，id 就是相同的
-};
-
-const postCleanEffect = (effect) => {
-  // [flag,age,xxx,aaa,bbb]
-  // [flag]
+  effect._trackId++; // 每次执行id 都是+1， 如果当前同一个effect执行，id就是相同的
+}
+function postCleanEffect(effect) {
+  // [flag,a,b,c]
+  // [flag]  -> effect._depsLength = 1
   if (effect.deps.length > effect._depsLength) {
-    for (let i = effect._depsLength; i < effect.deps.length, i++; ) {
-      // 删除映射表中对应的 effect
-      cleanDepEffect(effect.deps[i], effect);
+    for (let i = effect._depsLength; i < effect.deps.length; i++) {
+      cleanDepEffect(effect.deps[i], effect); // 删除映射表中对应的effect
     }
-    // 更新依赖列表的长度
-    effect.deps.length = effect._depsLength;
+    effect.deps.length = effect._depsLength; // 更新依赖列表的长度
   }
-};
+}
 
 // effectScope.stop() 停止所有的effect 不参加响应式处理
 export class ReactiveEffect {
@@ -89,6 +86,7 @@ export class ReactiveEffect {
   }
   stop() {
     if (this.active) {
+      console.log("stop effect");
       this.active = false;
       preCleanEffect(this);
       postCleanEffect(this);
