@@ -10,19 +10,30 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    // import {
-    //   ref,
-    //   effect,
-    //   reactive,
-    //   toRef,
-    //   toRefs,
-    //   proxyRefs,
-    //   computed,
-    // } from "/node_modules/@vue/reactivity/dist/reactivity.esm-browser.js";
+    import {
+      ref,
+      effect,
+      reactive,
+      toRef,
+      toRefs,
+      proxyRefs,
+      computed,
+      watch,
+      watchEffect,
+    } from "/node_modules/vue/dist/vue.esm-browser.js";
 
-    import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed } from "./reactivity.js";
+    // import { ref, effect, reactive, toRef, toRefs, proxyRefs, computed } from "./reactivity.js";
 
+    const state = reactive({ name: "wdl", age: 18, address: { n: 1 } });
 
+    watch(() => state.name, (newValue, oldValue) => {
+      console.log("state changed", newValue, oldValue); // lilito wdl
+    },
+      { deep: true });
+
+    setTimeout(() => {
+      state.name = "lilito"
+    }, 2000)
 
 
   </script>
