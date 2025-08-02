@@ -39,3 +39,8 @@ export const reactive = (target) => {
 export const toReactive = (value) => {
   return isObject(value) ? reactive(value) : value;
 }
+
+// 判断一个对象是否是响应式的
+export function isReactive(value) {
+  return !!(value && value[ReactiveFlags.IS_REACTIVE]);
+}

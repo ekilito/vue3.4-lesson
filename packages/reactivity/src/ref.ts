@@ -101,3 +101,8 @@ export const proxyRefs = (objectWithRef) => {
     }
   })
 }
+
+// 判断一个值是否是 ref 类型
+export const isRef = (value) => {
+  return !!(value && value.__v_isRef);
+};

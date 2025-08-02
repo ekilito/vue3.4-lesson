@@ -26,13 +26,17 @@
 
     const state = reactive({ name: "wdl", age: 18, address: { n: 1 } });
 
-    watch(state, (newValue, oldValue) => {
+    const name = ref("wdl");
+
+    // state
+    // () => state.name
+    watch(name, (newValue, oldValue) => {
       console.log("state changed", newValue, oldValue); // lilito wdl
     },
-      { deep: true });
+      { deep: true, immediate: true });
 
     setTimeout(() => {
-      state.name = "lilito"
+      name.value = "lilito"
     }, 2000)
 
 

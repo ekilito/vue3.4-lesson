@@ -1,5 +1,7 @@
-import { isObject } from "@vue/shared";
+import { isFunction, isObject } from "@vue/shared";
 import { ReactiveEffect } from "./effect";
+import { isReactive } from "./reactive";
+import { isRef } from "./ref";
 
 export const watch = (source, cb, options = {} as any) => {
   // watchEffect 也是基于doWatch 实现的
@@ -30,13 +32,21 @@ const traverse = (source, depth, currentDepth = 0, seen = new Set()) => {
   return source;
 };
 
-const doWatch = (source, cb, { deep }) => {
+const doWatch = (source, cb, { deep, immediate }) => {
   // source ? => getter
 
   const reactiveGetter = (source) => traverse(source, deep === false ? 1 : undefined);
 
   // 产生一个可以给ReactiveEffect 来使用的getter，需要对这个对象进行取值操作，会关联当前的 reactiveEffect
-  let getter = () => reactiveGetter(source);
+  let getter;
+
+  if (isReactive(source)) {
+    getter = () => reactiveGetter(source);
+  } else if (isRef(source)) {
+    getter = () => source.value;
+  } else if (isFunction(source)) {
+    getter = () => source();
+  }
 
   let oldValue;
 
@@ -48,6 +58,14 @@ const doWatch = (source, cb, { deep }) => {
 
   const effect = new ReactiveEffect(getter, job);
 
-  oldValue = effect.run();
+  if (cb) {
+    if (immediate) { // 立即先执行一次用户的回调，传递新值和老值
+      job();
+    } else {
+      oldValue = effect.run();
+    }
+  } else {
+    // watchEffect
+  }
 };
 
