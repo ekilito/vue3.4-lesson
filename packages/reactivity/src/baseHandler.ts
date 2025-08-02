@@ -18,7 +18,7 @@ export const mutableHandlers: ProxyHandler<any> = {
     // 当取值的时候，应该让响应式属性 和 effect 映射起来
 
     // 依赖收集
-    console.log("收集依赖", target , key)
+    // console.log("收集依赖", target , key)
     // 收集这个对象上的这个属性，和 effect 关联在一起
     track(target, key);
     // console.log(activeEffect, key)
@@ -36,7 +36,7 @@ export const mutableHandlers: ProxyHandler<any> = {
     // 找到属性，让对应的 effect 重新执行
 
     // 触发更新
-    console.log("触发更新",target , key , value);
+    // console.log("触发更新",target , key , value);
 
     let oldValue = target[key];
 

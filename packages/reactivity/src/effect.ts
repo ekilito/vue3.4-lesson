@@ -1,4 +1,4 @@
-import { DirtyLevels } from './constants';
+import { DirtyLevels } from "./constants";
 
 export const effect = (fn, options?) => {
   // 创建一个响应式 effect 数据变化后可以重新执行
@@ -61,7 +61,7 @@ export class ReactiveEffect {
     // 设置脏值
     this._dirtyLevel = value ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
   }
-  
+
   // 脏的 => 获取最新的值 => 不脏的 (缓存结果)
   // 多次取值 （缓存结果）
 
@@ -88,7 +88,7 @@ export class ReactiveEffect {
     }
   }
   stop() {
-    if(this.active) {
+    if (this.active) {
       this.active = false;
       preCleanEffect(this);
       postCleanEffect(this);
@@ -142,12 +142,12 @@ const cleanDepEffect = (oldDep, effect) => {
   }
 };
 
-export const triggerEffects = (dep) => { // dep:(name) => 收集计算属性 => 调用计算属性的 scheduler => 触发计算属性收集的effect
+export const triggerEffects = (dep) => {
+  // dep:(name) => 收集计算属性 => 调用计算属性的 scheduler => 触发计算属性收集的effect
   for (const effect of dep.keys()) {
-
     // 如果当前这个值是不脏的，但是触发更新需要将值变为脏值
     // 属性依赖了计算属性，需要让计算属性的 dirty 在变为 true
-    if(effect._dirtyLevel < DirtyLevels.Dirty) {
+    if (effect._dirtyLevel < DirtyLevels.Dirty) {
       effect._dirtyLevel = DirtyLevels.Dirty; // 变为脏值
     }
 

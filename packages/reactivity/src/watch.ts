@@ -81,6 +81,7 @@ const doWatch = (source, cb, { deep, immediate }) => {
   }
 
   const unwatch = () => {
+    console.log("unwatch");
     effect.stop();
   }
 

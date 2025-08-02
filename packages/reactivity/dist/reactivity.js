@@ -159,7 +159,6 @@ var mutableHandlers = {
     if (key === "__v_isReactive" /* IS_REACTIVE */) {
       return true;
     }
-    console.log("\u6536\u96C6\u4F9D\u8D56", target, key);
     track(target, key);
     let res = Reflect.get(target, key, recevier);
     if (isObject(res)) {
@@ -168,7 +167,6 @@ var mutableHandlers = {
     return res;
   },
   set(target, key, value, recevier) {
-    console.log("\u89E6\u53D1\u66F4\u65B0", target, key, value);
     let oldValue = target[key];
     let result = Reflect.set(target, key, value, recevier);
     if (oldValue !== value) {
@@ -381,6 +379,7 @@ var doWatch = (source, cb, { deep, immediate }) => {
     effect2.run();
   }
   const unwatch = () => {
+    console.log("unwatch");
     effect2.stop();
   };
   return unwatch;

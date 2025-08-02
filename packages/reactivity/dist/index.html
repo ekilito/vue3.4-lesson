@@ -31,7 +31,7 @@
     const unwatch = watch(
       () => state.name,
       (newValue, oldValue) => {
-        console.log("state changed", newValue, oldValue); // kilito wdl
+        console.log("watch =>", newValue, oldValue); // kilito wdl
       },
       { deep: true, immediate: true },
     );
@@ -39,8 +39,9 @@
     unwatch();
 
     setTimeout(() => {
-      state.name = "kilito";
-    }, 2000);
+      state.name = "kilito1";
+      state.name = "kilito2";
+    }, 1000);
   </script>
 </body>
 
