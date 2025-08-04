@@ -1,6 +1,10 @@
-export * from "@vue/reactivity";
 import { nodeOps } from "./nodeOps";
-import { patchProp } from "./patchProp";
+import patchProp from "./patchProp";
 
-const renderOptions = Object.assign(nodeOps, patchProp);
-export const createRenderer = () => {};
+// 将节点操作和属性操作合并在一起
+const renderOptions = Object.assign({ patchProp }, nodeOps);
+
+export { renderOptions };
+export * from "@vue/reactivity";
+
+

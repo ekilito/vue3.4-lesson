@@ -2,33 +2,26 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>runtime-dom</title>
 </head>
 
 <body>
   <div id="app"></div>
   <script type="module">
-    import { createRenderer, render, h } from '/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js'
-    // import { createRenderer } from './runtime-dom.js'
+    import { createRenderer, render, h } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js";
+    import { renderOptions } from "./runtime-dom.js";
 
+    const ele = h(
+      "div",
+      { style: { color: "red" }, class: "abc", onClick: () => console.log("click"), dataId: 1 },
+      "hello world",
+    );
 
-    const ele = h('div', 'hello world')
+    const renderer = createRenderer(renderOptions);
 
-    const renderer = createRenderer({
-      createElement(tag) { // 创建元素
-        return document.createElement(tag)
-      },
-      setElementText(el, text) { // 设置元素文本
-        el.textContent = text
-      },
-      insert(el, container) { // 插入元素
-        container.appendChild(el)
-      },
-    })
-
-    renderer.render(ele, app)
+    renderer.render(ele, app);
   </script>
 </body>
 
