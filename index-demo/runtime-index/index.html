@@ -11,8 +11,16 @@
   <div id="app"></div>
   <script type="module">
     import { createRenderer, render, h } from '/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js'
-    // import { createRenderer } from './runtime-dom.js'
 
+    console.log('createRenderer =>', createRenderer)
+    console.log('render =>', render)
+    console.log('h =>', h)
+
+    // 1. createRenderer 可以自己创建渲染器 （自己提供渲染的方式）
+    // 2. render 用内置的渲染器进行渲染 （渲染 dom 元素）
+    // 3. h 用于创建虚拟节点（vnode）
+    // runtime-dom 的作用就是提供一个渲染器，来渲染虚拟节点（vnode）到真实的 DOM 上。(提供一系列的 dom操作的api 方法)
+    // @vue/runtime-dom => @vue/runtime-core => @vue/reactivity
 
     const ele = h('div', 'hello world')
 
@@ -29,6 +37,7 @@
     })
 
     renderer.render(ele, app)
+    // render(ele,app)
   </script>
 </body>
 
