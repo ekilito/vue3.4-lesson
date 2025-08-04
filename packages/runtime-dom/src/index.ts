@@ -7,6 +7,7 @@ const renderOptions = Object.assign({ patchProp }, nodeOps);
 
 export { renderOptions };
 
+// render 方法采用dom api来进行渲染
 export const render = (vNode, container) => {
   return createRenderer(renderOptions).render(vNode,container)
 }

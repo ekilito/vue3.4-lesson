@@ -89,6 +89,11 @@ function patchProp(el, key, prevValue, nextValue) {
 
 // packages/runtime-core/src/index.ts
 var createRenderer = (renderOptions2) => {
+  const render2 = (vnode, container) => {
+  };
+  return {
+    render: render2
+  };
 };
 
 // packages/runtime-dom/src/index.ts
