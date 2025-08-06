@@ -10,18 +10,35 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { createRenderer, render, h } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js";
-    import { renderOptions } from "./runtime-dom.js";
+    import { h } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js";
+    import { renderOptions, render } from "./runtime-dom.js";
 
+    // 1 + 8 = 9 shapeFlag
+    // const ele = h(
+    //   "div",
+    //   { style: { color: "red" }, class: "abc", onClick: () => console.log("click"), dataId: 1 },
+    //   "hello world",
+    // );
     const ele = h(
       "div",
       { style: { color: "red" }, class: "abc", onClick: () => console.log("click"), dataId: 1 },
-      "hello world",
+      [
+        h("p", 'hello'), h("p", 'world')
+      ],
     );
 
-    const renderer = createRenderer(renderOptions);
+    const ele2 = h(
+      "h5",
+      { style: { color: "pink" }, class: "abc", onClick: () => console.log("click"), dataId: 2 },
+      "wdl",
+    );
 
-    renderer.render(ele, app);
+    render(ele, app);
+    setTimeout(() => {
+      render(ele2, app);
+    }, 3000);
+    // const renderer = createRenderer(renderOptions);
+    // renderer.render(ele, app);
   </script>
 </body>
 
