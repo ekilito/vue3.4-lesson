@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>runtime-dom</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { h } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js";
+    import { renderOptions, render } from "./runtime-dom.js";
+
+    // 1 + 8 = 9 shapeFlag
+    // const ele = h(
+    //   "div",
+    //   { style: { color: "red" }, class: "abc", onClick: () => console.log("click"), dataId: 1 },
+    //   "hello world",
+    // );
+    const ele = h(
+      "div",
+      { style: { color: "red" }, class: "abc", onClick: () => console.log("click"), dataId: 1 },
+      [
+        h("p", 'hello'), h("p", 'world')
+      ],
+    );
+
+    const ele2 = h(
+      "h5",
+      { style: { color: "pink" }, class: "abc", onClick: () => console.log("click"), dataId: 2 },
+      "wdl",
+    );
+
+    render(ele, app);
+    setTimeout(() => {
+      render(ele2, app);
+    }, 3000);
+    // const renderer = createRenderer(renderOptions);
+    // renderer.render(ele, app);
+  </script>
+</body>
+
+</html>
