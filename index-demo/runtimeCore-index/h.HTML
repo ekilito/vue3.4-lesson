@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>runtime-core</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    // import { h } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js";
+    import { renderOptions, render, h } from "./runtime-dom.js";
+
+    // h 函数的实现
+    // 参数可以有 2个（类型，属性/子元素） 或者3个（标准）
+    // h(类型 , 属性 , 子元素)
+    // h(类型 , 子元素)
+
+    // 1. 两个参数 第二个参数可能是 属性，或者是 虚拟节点 （ __v_isVnode ）
+    // 2. 第二个参数就是一个数组 => 子元素 儿子
+    // const ele = h("div", ["a", "b"]);
+    // 3. 其它情况下就是 属性
+    // const ele = h("div", { a: "1" });
+    // 4. 直接传递一个非对象的 => 文本
+    // const ele = h("div", "text");
+    // 5. 不能出现3个参数的时候第二个不是属性 第二个只能是属性
+    // 6. 如果超过3个参数，后面的都是儿子 子元素
+    // const ele = h("div", [h("div", "abc")])
+    // const ele = h("div", {}, [h("div", "abc")])
+    // const ele = h("div", {}, "a", "b", "c", "d")
+
+
+    const ele = h(
+      "div",
+      { style: { color: "red" }, class: "abc", onClick: () => console.log("click"), dataId: 1 },
+      [
+        h("p", 'hello'), h("p", 'world')
+      ],
+    );
+
+    render(ele, app);
+
+    // const ele2 = h(
+    //   "h5",
+    //   { style: { color: "pink" }, class: "abc", onClick: () => console.log("click"), dataId: 2 },
+    //   "wdl",
+    // );
+    // console.log(ele)
+
+
+    // setTimeout(() => {
+    //   render(ele2, app);
+    // }, 3000);
+    // const renderer = createRenderer(renderOptions);
+    // renderer.render(ele, app);
+  </script>
+</body>
+
+</html>
