@@ -26,6 +26,8 @@ export const createRenderer = (renderOptions) => {
     console.log(vnode)
     const { type , children , props , shapeFlag} = vnode
 
+    // 第一次渲染的时候让虚拟节点和真实dom 创建关联 vnode.el = 真实dom
+    // 第二次渲染新的 vnode， 可以和上一次的vnode 做对比，之后更新对应的el元素，可以后续再复用这个dom元素
     const el = hostCreateElement(type)
     if(props) {
       for(let key in props) {
@@ -52,10 +54,19 @@ export const createRenderer = (renderOptions) => {
     }
   };
 
+  const unmount = (vnode) => hostRemove(vnode.el);
+
   // 多次调用render 会进行虚拟节点的比较，在进行更新
   const render = (vnode, container) => {
     //  console.log("vnode => ",vnode)
     //  console.log("container => ", container)
+    if(vnode == null) { 
+      // 移除当前容器中的dom元素
+      if(container._vnode) {
+        console.log("remove element");
+        unmount(container._vnode);
+      }
+    }
     // todo 将虚拟节点变成真实节点进行渲染
     patch(container._vnode || null, vnode, container);
     container._vnode = vnode;

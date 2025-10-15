@@ -12,6 +12,11 @@
   <script type="module">
     import { renderOptions, render, h } from "./runtime-dom.js";
 
+    render(h('div', 'hello world'), app)
+
+    setTimeout(() => {
+      render(null, app)
+    }, 2000);
 
   </script>
 </body>

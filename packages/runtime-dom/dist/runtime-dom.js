@@ -188,7 +188,14 @@ var createRenderer = (renderOptions2) => {
       mountElement(n2, container);
     }
   };
+  const unmount = (vnode) => hostRemove(vnode.el);
   const render2 = (vnode, container) => {
+    if (vnode == null) {
+      if (container._vnode) {
+        console.log("remove element");
+        unmount(container._vnode);
+      }
+    }
     patch(container._vnode || null, vnode, container);
     container._vnode = vnode;
   };
