@@ -1,4 +1,5 @@
 import { ShapeFlags } from '@vue/shared';
+import { isSameVnode } from './createVnode';
 
 export const createRenderer = (renderOptions) => {
   // core 中不关心如何渲染
@@ -29,6 +30,7 @@ export const createRenderer = (renderOptions) => {
     // 第一次渲染的时候让虚拟节点和真实dom 创建关联 vnode.el = 真实dom
     // 第二次渲染新的 vnode， 可以和上一次的vnode 做对比，之后更新对应的el元素，可以后续再复用这个dom元素
     const el = hostCreateElement(type)
+    vnode.el = el // ✅ 关键：建立 vnode 和真实 DOM 的绑定
     if(props) {
       for(let key in props) {
         hostPatchProp(el , key ,null , props[key])
@@ -44,17 +46,74 @@ export const createRenderer = (renderOptions) => {
     hostInsert(el,container)
   }
 
+  const processElement = (n1 , n2 , container) => {
+    if(n1 === null) {
+      // 初始化操作
+      mountElement(n2 , container)
+    }else {
+      patchElement(n1 , n2 , container)
+    }
+  }
+
+  const patchProps = ( oldProps , newProps , el) => {
+    if (!el) return; // 防止空 DOM
+    // 新的要全部生效
+    for(let key in newProps) {
+      hostPatchProp(el , key , oldProps[key] , newProps[key])
+    }
+    // 老的有新的没有需要删除
+    for(let key in oldProps) {
+      if(!(key in newProps)) {
+        hostPatchProp(el , key , oldProps[key] , null)
+      }
+    }
+  }
+
+  // 比较 n1 和 n2 的 children
+  const patchChildren = (n1 , n2 , container) => {
+    debugger
+  }
+
+
+  const patchElement = (n1 , n2 , container) => {
+    // 1. 比较元素的差异，需要复用dom元素
+    // 2. 比较属性和元素的子节点
+    let el = (n2.el = n1.el); // 复用老节点 对dom元素的复用 n2.el n3.el n4
+
+    let oldProps = n1.props || {};
+    let newProps = n2.props || {};
+   
+    // hostPatchProp 只针对某一个属性来处理 class style event attr
+    patchProps( oldProps , newProps , el)
+
+    patchChildren(n1 , n2 , container)
+  }
+
   // 渲染走这里，更新也走这里
   const patch = (n1, n2, container) => {
-    // 两次渲染同一个元素直接跳过即可
-    if(n1 == n2) return
-    // 初始化操作
-    if(n1 === null) {
-      mountElement(n2 , container)
+   
+    if(n1 == n2) {
+      // 两次渲染同一个元素直接跳过即可
+      return
     }
+
+    // 直接移除老的dom元素，初始化新的dom元素
+    if(n1 && !isSameVnode(n1, n2)) {
+      // 如果不是同一个元素，需要删除老的换新的
+      unmount(n1);
+      n1 = null; // 让n1 变成null 就会执行n2的初始化逻辑
+    }
+
+    // 对元素的处理
+    processElement(n1 , n2 , container)
   };
 
-  const unmount = (vnode) => hostRemove(vnode.el);
+  const unmount = (vnode) => {
+  const el = vnode.el;
+  if (el && el.parentNode) {
+    hostRemove(el);
+  }
+};
 
   // 多次调用render 会进行虚拟节点的比较，在进行更新
   const render = (vnode, container) => {

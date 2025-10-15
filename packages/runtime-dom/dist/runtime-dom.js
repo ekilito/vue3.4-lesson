@@ -99,6 +99,9 @@ function isString(value) {
 var isVnode = (value) => {
   return value?.__v_isVnode;
 };
+var isSameVnode = (n1, n2) => {
+  return n1.type === n2.type && n1.key === n2.key;
+};
 var createVnode = (type, props, children) => {
   const shapeFlag = isString(type) ? 1 /* ELEMENT */ : 0;
   const vnode = {
@@ -169,6 +172,7 @@ var createRenderer = (renderOptions2) => {
     console.log(vnode);
     const { type, children, props, shapeFlag } = vnode;
     const el = hostCreateElement(type);
+    vnode.el = el;
     if (props) {
       for (let key in props) {
         hostPatchProp(el, key, null, props[key]);
@@ -181,14 +185,51 @@ var createRenderer = (renderOptions2) => {
     }
     hostInsert(el, container);
   };
-  const patch = (n1, n2, container) => {
-    if (n1 == n2)
-      return;
+  const processElement = (n1, n2, container) => {
     if (n1 === null) {
       mountElement(n2, container);
+    } else {
+      patchElement(n1, n2, container);
     }
   };
-  const unmount = (vnode) => hostRemove(vnode.el);
+  const patchProps = (oldProps, newProps, el) => {
+    if (!el)
+      return;
+    for (let key in newProps) {
+      hostPatchProp(el, key, oldProps[key], newProps[key]);
+    }
+    for (let key in oldProps) {
+      if (!(key in newProps)) {
+        hostPatchProp(el, key, oldProps[key], null);
+      }
+    }
+  };
+  const patchChildren = (n1, n2, container) => {
+    debugger;
+  };
+  const patchElement = (n1, n2, container) => {
+    let el = n2.el = n1.el;
+    let oldProps = n1.props || {};
+    let newProps = n2.props || {};
+    patchProps(oldProps, newProps, el);
+    patchChildren(n1, n2, container);
+  };
+  const patch = (n1, n2, container) => {
+    if (n1 == n2) {
+      return;
+    }
+    if (n1 && !isSameVnode(n1, n2)) {
+      unmount(n1);
+      n1 = null;
+    }
+    processElement(n1, n2, container);
+  };
+  const unmount = (vnode) => {
+    const el = vnode.el;
+    if (el && el.parentNode) {
+      hostRemove(el);
+    }
+  };
   const render2 = (vnode, container) => {
     if (vnode == null) {
       if (container._vnode) {
@@ -213,6 +254,7 @@ export {
   createRenderer,
   createVnode,
   h,
+  isSameVnode,
   isVnode,
   render,
   renderOptions

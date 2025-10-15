@@ -12,10 +12,16 @@
   <script type="module">
     import { renderOptions, render, h } from "./runtime-dom.js";
 
-    render(h('div', 'hello world'), app)
+    let vnode1 = h('div', 'hello world')
+    let vnode2 = h('div', { style: { color: 'red' } }, 'hello vue3.4')
+
+    render(vnode1, app)
+
+    // 两个节点之间是有 diff 的，看两个元素是否是同一个元素，如果是择可以复用
+    // 如果不是同一个元素，需要删除老的换新的
 
     setTimeout(() => {
-      render(null, app)
+      render(vnode2, app)
     }, 2000);
 
   </script>
