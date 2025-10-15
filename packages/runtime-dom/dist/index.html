@@ -12,8 +12,8 @@
   <script type="module">
     import { renderOptions, render, h } from "./runtime-dom.js";
 
-    let vnode1 = h('div', 'hello world')
-    let vnode2 = h('div', { style: { color: 'red' } }, 'hello vue3.4')
+    let vnode1 = h('h6', { a: 1 }, 'hello world')
+    let vnode2 = h('h6', { style: { color: 'red' } }, [h('h1', 'a')])
 
     render(vnode1, app)
 

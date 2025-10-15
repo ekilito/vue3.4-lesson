@@ -69,10 +69,55 @@ export const createRenderer = (renderOptions) => {
     }
   }
 
-  // 比较 n1 和 n2 的 children
-  const patchChildren = (n1 , n2 , container) => {
-    debugger
+  const unmountChildren = (children) => {
+    for(let i = 0; i < children.length; i++) {
+      const child = children[i]
+      unmount(child)
+    }
   }
+
+  // 比较 n1 和 n2 的 children text array null
+  const patchChildren = (n1 , n2 , el) => {
+    const c1 = n1.children
+    const c2 = n2.children
+
+    const prevShapeFlag = n1.shapeFlag
+    const shapeFlag = n2.shapeFlag
+    // 1. 新的是文本, 老的是数组移除老的
+    // 2. 新的是文本, 老的也是文本, 内容不相同直接替换
+    // 3. 老的是数组, 新的是数组, 全量 diff 算法
+    // 4. 老的是数组，新的不是数组，移除老的子节点
+    // 5. 老的是文本，新的是空
+    // 6. 老的是文本，新的是数组
+
+    if(shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      if(prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+       unmountChildren(c1)
+     }
+      if(c1 !== c2) {
+        hostSetElementText(el, c2)
+      }
+   }else{
+      // 老的是数组
+      if(prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        if(shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          // 全量 diff 算法，两个数组的比对
+        }else{
+          // 老的是数组 新的不是数组
+          unmountChildren(c1)
+        }
+      }else {
+        // 老的是文本
+        if(prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+          hostSetElementText(el , '')
+        }
+        // 老的是文本 新的是数组
+        if(shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          mountChildren(c2 , el)
+        }
+      }
+   }
+ }
 
 
   const patchElement = (n1 , n2 , container) => {
@@ -86,7 +131,7 @@ export const createRenderer = (renderOptions) => {
     // hostPatchProp 只针对某一个属性来处理 class style event attr
     patchProps( oldProps , newProps , el)
 
-    patchChildren(n1 , n2 , container)
+    patchChildren(n1 , n2 , el)
   }
 
   // 渲染走这里，更新也走这里
