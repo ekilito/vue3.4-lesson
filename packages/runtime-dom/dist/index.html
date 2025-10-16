@@ -16,12 +16,21 @@
       h('div', { key: 'a' }, 'a'),
       h('div', { key: 'b' }, 'b'),
       h('div', { key: 'c' }, 'c'),
-    ])
-    let vnode2 = h('h6', [
       h('div', { key: 'd' }, 'd'),
       h('div', { key: 'e' }, 'e'),
+      h('div', { key: 'f' }, 'f'),
+      h('div', { key: 'g' }, 'g'),
+
+    ])
+    let vnode2 = h('h6', [
+      h('div', { key: 'a' }, 'a'),
       h('div', { key: 'b' }, 'b'),
+      h('div', { key: 'e' }, 'e'),
       h('div', { key: 'c' }, 'c'),
+      h('div', { key: 'd' }, 'd'),
+      h('div', { key: 'h' }, 'h'),
+      h('div', { key: 'f' }, 'f'),
+      h('div', { key: 'g' }, 'g'),
     ])
 
     render(vnode1, app)
@@ -31,7 +40,7 @@
 
     setTimeout(() => {
       render(vnode2, app)
-    }, 2000);
+    }, 5000);
 
   </script>
 </body>
