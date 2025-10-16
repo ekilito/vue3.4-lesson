@@ -76,6 +76,57 @@ export const createRenderer = (renderOptions) => {
     }
   }
 
+
+  const patchKeyedChildren = (c1 , c2 , el) => {
+    // 比较两个儿子的差异更新 el
+    // appendChild removeChild insertBefore
+    // [a,b,c] 
+    // [a,b,d,e]
+
+    // 1. 减少对比范围，先从头开始比，再从尾部开始比，确定不一样的范围
+    // 2. 从头比对，再从尾部对比，如果有多余的或者新增的直接操作即可
+
+    let i = 0; // 开始比对的索引
+    let e1 = c1.length - 1; // 老的数组的尾部索引
+    let e2 = c2.length - 1; // 新的数组的尾部索引
+
+    while(i <= e1 && i <= e2) {
+      // 有任何一方循环结束了 就要终止对比
+      const n1 = c1[i]
+      const n2 = c2[i]
+      if(isSameVnode(n1 , n2)) {
+        // 说明是同一个节点 更新当前子节点的属性和儿子 递归比对子节点
+        patch(n1 , n2 , el)
+      }else {
+        break
+      }
+      i++
+    }
+    // 到 c 的位置终止了
+    // 到 d 的位置终止了
+    // c
+    // d e
+    console.log('比对范围', 'i =>' , i , 'e1 =>' , e1 , 'e2 =>' , e2)
+    
+    while(i <= e1 && i <= e2) {
+      const n1 = c1[e1]
+      const n2 = c2[e2]
+      // [a,b,c]
+      // [d,e,b,c]
+      if(isSameVnode(n1 , n2)) {
+        // 说明是同一个节点 更新当前子节点的属性和儿子 递归比对子节点
+        patch(n1 , n2 , el)
+      }else {
+        break
+      }
+      e1--
+      e2--
+    }
+     console.log('比对范围', 'i =>' , i , 'e1 =>' , e1 , 'e2 =>' , e2)
+
+     // 处理增加和删除的特殊情况 [a,b,c] => [a,b]  [c,a,b] => [a,b] [a,b] => [a,b,c]
+  }
+
   // 比较 n1 和 n2 的 children text array null
   const patchChildren = (n1 , n2 , el) => {
     const c1 = n1.children
@@ -102,6 +153,9 @@ export const createRenderer = (renderOptions) => {
       if(prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         if(shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
           // 全量 diff 算法，两个数组的比对
+
+          patchKeyedChildren(c1, c2, el)
+
         }else{
           // 老的是数组 新的不是数组
           unmountChildren(c1)

@@ -210,6 +210,34 @@ var createRenderer = (renderOptions2) => {
       unmount(child);
     }
   };
+  const patchKeyedChildren = (c1, c2, el) => {
+    let i = 0;
+    let e1 = c1.length - 1;
+    let e2 = c2.length - 1;
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[i];
+      const n2 = c2[i];
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el);
+      } else {
+        break;
+      }
+      i++;
+    }
+    console.log("\u6BD4\u5BF9\u8303\u56F4", "i =>", i, "e1 =>", e1, "e2 =>", e2);
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[e1];
+      const n2 = c2[e2];
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el);
+      } else {
+        break;
+      }
+      e1--;
+      e2--;
+    }
+    console.log("\u6BD4\u5BF9\u8303\u56F4", "i =>", i, "e1 =>", e1, "e2 =>", e2);
+  };
   const patchChildren = (n1, n2, el) => {
     const c1 = n1.children;
     const c2 = n2.children;
@@ -225,6 +253,7 @@ var createRenderer = (renderOptions2) => {
     } else {
       if (prevShapeFlag & 16 /* ARRAY_CHILDREN */) {
         if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
+          patchKeyedChildren(c1, c2, el);
         } else {
           unmountChildren(c1);
         }

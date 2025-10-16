@@ -12,8 +12,17 @@
   <script type="module">
     import { renderOptions, render, h } from "./runtime-dom.js";
 
-    let vnode1 = h('h6', { a: 1 }, 'hello world')
-    let vnode2 = h('h6', { style: { color: 'red' } }, [h('h1', 'a')])
+    let vnode1 = h('h6', [
+      h('div', { key: 'a' }, 'a'),
+      h('div', { key: 'b' }, 'b'),
+      h('div', { key: 'c' }, 'c'),
+    ])
+    let vnode2 = h('h6', [
+      h('div', { key: 'd' }, 'd'),
+      h('div', { key: 'e' }, 'e'),
+      h('div', { key: 'b' }, 'b'),
+      h('div', { key: 'c' }, 'c'),
+    ])
 
     render(vnode1, app)
 
