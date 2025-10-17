@@ -1,5 +1,6 @@
 import { ShapeFlags } from '@vue/shared';
 import { isSameVnode } from './createVnode';
+import getSequence from './seq';
 
 export const createRenderer = (renderOptions) => {
   // core 中不关心如何渲染
@@ -76,7 +77,7 @@ export const createRenderer = (renderOptions) => {
     }
   }
 
-
+  // vue 中分为两种， 全量diff （递归diff） 快速diff（靶向更新）-> 基于模版编译的
   const patchKeyedChildren = (c1, c2, el) => {
     // 比较两个儿子的差异更新 el
     // appendChild removeChild insertBefore
@@ -176,6 +177,14 @@ export const createRenderer = (renderOptions) => {
 
       // 构建 映射表 用于快速查找，看老的是否在新的里面存在，没有就删除，有的话就更新
       const keyToNewIndexMap = new Map()
+      const toBePatched = e2 - s2 + 1 // 新的元素个数 要倒叙插入
+      // 创建一个数组，来记录新的元素对应老的位置索引
+      let newIndexToOldIndexMap = new Array(toBePatched).fill(0) // [0,0,0,0] 代表还没有处理过
+
+      // [5, 3, 4, 0] 代表新的元素对应老的位置索引
+      // [5, 3, 4, 0] -> [1, 2] 根据最长递增子序列求出对应的 索引结果
+
+      // 根据新的节点，找到对应老的位置
       for (let i = s2; i <= e2; i++) {
         const vnode = c2[i]
         keyToNewIndexMap.set(vnode.key, i)
@@ -189,6 +198,8 @@ export const createRenderer = (renderOptions) => {
           // 老的在新的里面不存在 需要删除
           unmount(oldVnode)
         } else {
+          newIndexToOldIndexMap[newIndex - s2] = i + 1; // +1 是为了区分0已经处理过了
+          console.log('newIndexToOldIndexMap =>', newIndexToOldIndexMap) // [5, 3, 4, 0]
           // 老的在新的里面存在 需要更新 比较前后节点的差异，更新属性和儿子
           patch(oldVnode, c2[newIndex], el) // 复用
         }
@@ -196,9 +207,14 @@ export const createRenderer = (renderOptions) => {
       // 调整顺序
       // 可以按照新的队列 倒序插入 insertBefore 通过参照物往前面插入
 
+      let increasingSeq = getSequence(newIndexToOldIndexMap)
+      console.log('increasingSeq =>', increasingSeq) // [1, 2]
+
+      let j = increasingSeq.length - 1; // 索引
+
       // 插入的过程中，可能新的元素多， 需要创建
-      const toBePatched = e2 - s2 + 1 // 新的元素个数 要倒叙插入
       for (let i = toBePatched - 1; i >= 0; i--) {
+        // 3 2 1 0
         // 参照物
         let newIndex = s2 + i; // h 对应的索引，找它的下一个元素作为参照物，来进行插入
         let anchor = c2[newIndex + 1]?.el;
@@ -207,7 +223,12 @@ export const createRenderer = (renderOptions) => {
         if (!vnode.el) { // 新列表中xi新增的元素
           patch(null, vnode, el, anchor); // 创建 h 插入
         } else {
-          hostInsert(vnode.el, el, anchor); // 倒序插入
+          // 
+          if (i == increasingSeq[j]) {
+            j--; // 做了diff 算法的优化
+          } else {
+            hostInsert(vnode.el, el, anchor); // 倒序插入
+          }
         }
       }
       // 倒序比对每一个元素，做插入操作
