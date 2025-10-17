@@ -1,5 +1,5 @@
 import { ShapeFlags } from '@vue/shared';
-import { isSameVnode } from './createVnode';
+import { isSameVnode, Text } from './createVnode';
 import getSequence from './seq';
 
 export const createRenderer = (renderOptions) => {
@@ -296,6 +296,19 @@ export const createRenderer = (renderOptions) => {
     patchChildren(n1, n2, el)
   }
 
+  const processText = (n1, n2, container) => {
+    if (n1 == null) {
+      // 1. 虚拟节点要关联真实节点
+      // 2. 将节点插入要页面中
+      hostInsert(n2.el = hostCreateText(n2.children), container)
+    } else {
+      const el = n2.el = n1.el;
+      if (n1.children !== n2.children) {
+        hostSetText(el, n2.children)
+      }
+    }
+  }
+
   // 渲染走这里，更新也走这里
   const patch = (n1, n2, container, anchor = null) => {
 
@@ -311,8 +324,16 @@ export const createRenderer = (renderOptions) => {
       n1 = null; // 让n1 变成null 就会执行n2的初始化逻辑
     }
 
-    // 对元素的处理
-    processElement(n1, n2, container, anchor)
+    const { type } = n2;
+
+    switch (type) {
+      case Text:
+        processText(n1, n2, container);
+        break;
+      default:
+        // 对元素的处理
+        processElement(n1, n2, container, anchor)
+    }
   };
 
   const unmount = (vnode) => {
@@ -332,10 +353,11 @@ export const createRenderer = (renderOptions) => {
         console.log("remove element");
         unmount(container._vnode);
       }
+    } else {
+      // todo 将虚拟节点变成真实节点进行渲染
+      patch(container._vnode || null, vnode, container);
+      container._vnode = vnode;
     }
-    // todo 将虚拟节点变成真实节点进行渲染
-    patch(container._vnode || null, vnode, container);
-    container._vnode = vnode;
   };
 
   return {
