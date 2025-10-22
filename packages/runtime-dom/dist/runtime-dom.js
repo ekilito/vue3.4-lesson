@@ -103,6 +103,7 @@ var isSameVnode = (n1, n2) => {
   return n1.type === n2.type && n1.key === n2.key;
 };
 var Text = Symbol("Text");
+var Fragment = Symbol("Fragment");
 var createVnode = (type, props, children) => {
   const shapeFlag = isString(type) ? 1 /* ELEMENT */ : 0;
   const vnode = {
@@ -383,6 +384,13 @@ var createRenderer = (renderOptions2) => {
       }
     }
   };
+  const processFragment = (n1, n2, container) => {
+    if (n1 == null) {
+      mountChildren(n2.children, container);
+    } else {
+      patchChildren(n1, n2, container);
+    }
+  };
   const patch = (n1, n2, container, anchor = null) => {
     if (n1 == n2) {
       return;
@@ -396,14 +404,21 @@ var createRenderer = (renderOptions2) => {
       case Text:
         processText(n1, n2, container);
         break;
+      case Fragment:
+        processFragment(n1, n2, container);
+        break;
       default:
         processElement(n1, n2, container, anchor);
     }
   };
   const unmount = (vnode) => {
-    const el = vnode.el;
-    if (el && el.parentNode) {
-      hostRemove(el);
+    if (vnode.type === Fragment) {
+      unmountChildren(vnode.children);
+    } else {
+      const el = vnode.el;
+      if (el && el.parentNode) {
+        hostRemove(el);
+      }
     }
   };
   const render2 = (vnode, container) => {
@@ -428,6 +443,7 @@ var render = (vNode, container) => {
   return createRenderer(renderOptions).render(vNode, container);
 };
 export {
+  Fragment,
   Text,
   createRenderer,
   createVnode,

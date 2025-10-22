@@ -1,5 +1,5 @@
 import { ShapeFlags } from '@vue/shared';
-import { isSameVnode, Text } from './createVnode';
+import { Fragment, isSameVnode, Text } from './createVnode';
 import getSequence from './seq';
 
 export const createRenderer = (renderOptions) => {
@@ -309,6 +309,16 @@ export const createRenderer = (renderOptions) => {
     }
   }
 
+  const processFragment = (n1, n2, container) => {
+    if (n1 == null) {
+      // 处理碎片的挂载逻辑，把children 挂载到容器中
+      mountChildren(n2.children, container)
+    } else {
+      // 处理碎片的更新逻辑
+      patchChildren(n1, n2, container)
+    }
+  };
+
   // 渲染走这里，更新也走这里
   const patch = (n1, n2, container, anchor = null) => {
 
@@ -330,6 +340,9 @@ export const createRenderer = (renderOptions) => {
       case Text:
         processText(n1, n2, container);
         break;
+      case Fragment:
+        processFragment(n1, n2, container);
+        break;
       default:
         // 对元素的处理
         processElement(n1, n2, container, anchor)
@@ -337,9 +350,14 @@ export const createRenderer = (renderOptions) => {
   };
 
   const unmount = (vnode) => {
-    const el = vnode.el;
-    if (el && el.parentNode) {
-      hostRemove(el);
+    if (vnode.type === Fragment) {
+      // 如果是碎片 需要卸载子节点
+      unmountChildren(vnode.children);
+    } else {
+      const el = vnode.el;
+      if (el && el.parentNode) {
+        hostRemove(el);
+      }
     }
   };
 

@@ -12,7 +12,11 @@
   <script type="module">
     import { render, h, Text, Fragment } from "./runtime-dom.js";
 
+    render(h(Fragment, [h('div', "hello"), h('div', "world")]), app);
 
+    setTimeout(() => {
+      render(h(Fragment, [h('div', 'hello world!'), h('div', 'new content')]), app)
+    }, 5000);
 
   </script>
 </body>
