@@ -1,6 +1,7 @@
 import { ShapeFlags } from '@vue/shared';
 import { Fragment, isSameVnode, Text } from './createVnode';
 import getSequence from './seq';
+import { reactive, ReactiveEffect } from '@vue/reactivity';
 
 export const createRenderer = (renderOptions) => {
   // core 中不关心如何渲染
@@ -319,6 +320,53 @@ export const createRenderer = (renderOptions) => {
     }
   };
 
+  const mountComponent = (n1, n2, container, anchor) => {
+    // 组件可以基于自己的状态重新渲染,effect
+    const { data = () => { }, render } = n2.type // type children props
+
+    const state = reactive(data())  // 组件的状态
+
+    const instance = {
+      state, // 状态
+      vnode: n2, // 组件的虚拟节点
+      subTree: null, // 子树
+      isMounted: false, // 是否挂载完成
+      update: null, // 组件的更新函数
+    }
+
+    const componentUpdateFn = () => {
+      console.log('state =>', state)
+      // 我们要在这里区分，是第一次还是之后的
+      if (!instance.isMounted) {
+        const subTree = render.call(state, state) // 通过状态渲染虚拟节点
+        // vnode -> patch
+        patch(null, subTree, container, anchor)
+        instance.isMounted = true
+        instance.subTree = subTree
+      } else {
+        // 基于状态的恶组件更新
+        const subTree = render.call(state, state)
+        patch(instance.subTree, subTree, container, anchor)
+        instance.subTree = subTree
+      }
+    }
+
+    const effect = new ReactiveEffect(componentUpdateFn, () => update())
+
+    const update = (instance.update = () => effect.run())
+    update() // 组件的首次渲染
+  }
+
+  const processComponent = (n1, n2, container, anchor) => {
+    if (n1 == null) {
+      // 组件的挂载
+      mountComponent(n1, n2, container, anchor)
+    } else {
+      // 组件的更新
+      // updateComponent(n1, n2)
+    }
+  }
+
   // 渲染走这里，更新也走这里
   const patch = (n1, n2, container, anchor = null) => {
 
@@ -334,7 +382,7 @@ export const createRenderer = (renderOptions) => {
       n1 = null; // 让n1 变成null 就会执行n2的初始化逻辑
     }
 
-    const { type } = n2;
+    const { type, shapeFlag } = n2;
 
     switch (type) {
       case Text:
@@ -344,8 +392,13 @@ export const createRenderer = (renderOptions) => {
         processFragment(n1, n2, container);
         break;
       default:
-        // 对元素的处理
-        processElement(n1, n2, container, anchor)
+        if (shapeFlag & ShapeFlags.ELEMENT) {
+          // 对元素的处理
+          processElement(n1, n2, container, anchor)
+        } else if (shapeFlag & ShapeFlags.COMPONENT) {
+          // 对组件的处理, vue3中函数式组件，已经废弃了， 没有性能节约
+          processComponent(n1, n2, container, anchor)
+        }
     }
   };
 
