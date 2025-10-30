@@ -2,6 +2,7 @@ import { ShapeFlags } from '@vue/shared';
 import { Fragment, isSameVnode, Text } from './createVnode';
 import getSequence from './seq';
 import { reactive, ReactiveEffect } from '@vue/reactivity';
+import { queueJob } from './scheduler';
 
 export const createRenderer = (renderOptions) => {
   // core 中不关心如何渲染
@@ -26,7 +27,7 @@ export const createRenderer = (renderOptions) => {
   }
 
   const mountElement = (vnode, container, anchor) => {
-    console.log(vnode)
+    console.log("vnode =>", vnode)
     const { type, children, props, shapeFlag } = vnode
 
     // 第一次渲染的时候让虚拟节点和真实dom 创建关联 vnode.el = 真实dom
@@ -351,7 +352,7 @@ export const createRenderer = (renderOptions) => {
       }
     }
 
-    const effect = new ReactiveEffect(componentUpdateFn, () => update())
+    const effect = new ReactiveEffect(componentUpdateFn, () => queueJob(update))
 
     const update = (instance.update = () => effect.run())
     update() // 组件的首次渲染

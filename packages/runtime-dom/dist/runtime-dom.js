@@ -374,6 +374,27 @@ var reactive = (target) => {
   return createReactiveObject(target);
 };
 
+// packages/runtime-core/src/scheduler.ts
+var queue = [];
+var isFlushing = false;
+var resolvePromise = Promise.resolve();
+var queueJob = (job) => {
+  console.log("job => ", job);
+  if (!queue.includes(job)) {
+    queue.push(job);
+  }
+  if (!isFlushing) {
+    isFlushing = true;
+    resolvePromise.then(() => {
+      isFlushing = false;
+      const copy = queue.slice(0);
+      queue.length = 0;
+      copy.forEach((job2) => job2());
+      copy.length = 0;
+    });
+  }
+};
+
 // packages/runtime-core/src/renderer.ts
 var createRenderer = (renderOptions2) => {
   const {
@@ -393,7 +414,7 @@ var createRenderer = (renderOptions2) => {
     }
   };
   const mountElement = (vnode, container, anchor) => {
-    console.log(vnode);
+    console.log("vnode =>", vnode);
     const { type, children, props, shapeFlag } = vnode;
     const el = hostCreateElement(type);
     vnode.el = el;
@@ -600,7 +621,7 @@ var createRenderer = (renderOptions2) => {
         instance.subTree = subTree;
       }
     };
-    const effect = new ReactiveEffect(componentUpdateFn, () => update());
+    const effect = new ReactiveEffect(componentUpdateFn, () => queueJob(update));
     const update = instance.update = () => effect.run();
     update();
   };

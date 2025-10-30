@@ -24,6 +24,7 @@
       render(proxy) {
         setTimeout(() => {
           proxy.count++
+          proxy.count++
         }, 1000);
         // this 指向组件实例 内部不会通过类来产生实例了
         return h('div', [
