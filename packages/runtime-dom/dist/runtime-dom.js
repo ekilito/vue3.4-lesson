@@ -94,6 +94,8 @@ function isObject(value) {
 function isString(value) {
   return typeof value == "string";
 }
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var hasOwn = (value, key) => hasOwnProperty.call(value, key);
 
 // packages/runtime-core/src/createVnode.ts
 var isVnode = (value) => {
@@ -627,20 +629,51 @@ var createRenderer = (renderOptions2) => {
       props: {},
       attrs: {},
       propsOptions,
-      component: null
+      component: null,
+      proxy: null
+      // 用来代理 props attrs data
     };
     vnode.component = instance;
     initProps(instance, vnode.props);
     console.log("instance => ", instance);
+    const publicProperty = {
+      $attrs: (instance2) => instance2.attrs
+      // ...
+    };
+    instance.proxy = new Proxy(instance, {
+      get(target, key) {
+        const { state: state2, props } = target;
+        if (state2 && hasOwn(state2, key)) {
+          return state2[key];
+        } else if (props && hasOwn(props, key)) {
+          return props[key];
+        }
+        const getter = publicProperty[key];
+        if (getter) {
+          return getter(target);
+        }
+      },
+      // 对于一些无法修改的属性， $slots $attrs ... $slots => instance.slots
+      set(target, key, value) {
+        const { state: state2, props } = target;
+        if (state2 && hasOwn(state2, key)) {
+          state2[key] = value;
+        } else if (props && hasOwn(props, key)) {
+          console.warn("props are readonly");
+          return false;
+        }
+        return true;
+      }
+    });
     const componentUpdateFn = () => {
       console.log("state =>", state);
       if (!instance.isMounted) {
-        const subTree = render3.call(state, state);
+        const subTree = render3.call(instance.proxy, instance.proxy);
         patch(null, subTree, container, anchor);
         instance.isMounted = true;
         instance.subTree = subTree;
       } else {
-        const subTree = render3.call(state, state);
+        const subTree = render3.call(instance.proxy, instance.proxy);
         patch(instance.subTree, subTree, container, anchor);
         instance.subTree = subTree;
       }

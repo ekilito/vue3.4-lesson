@@ -22,13 +22,21 @@
         name: String,
         count: Number
       },
+      data() {
+        return {
+          x: 1,
+          y: 2
+        }
+      },
       render(proxy) {
         console.log('proxy => ', proxy)
 
         // this 指向组件实例 内部不会通过类来产生实例了
         return h('div', [
-          h(Text, 'Hello ' + proxy.props.name),
-          h('a', proxy.props.count),
+          h(Text, 'Hello ' + proxy.name),
+          h('a', proxy.count),
+          h('a', proxy.$attrs.a),
+          h('a', proxy.$attrs.b),
         ])
       }
     }

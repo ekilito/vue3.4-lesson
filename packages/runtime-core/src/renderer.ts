@@ -1,4 +1,4 @@
-import { ShapeFlags } from '@vue/shared';
+import { hasOwn, ShapeFlags } from '@vue/shared';
 import { Fragment, isSameVnode, Text } from './createVnode';
 import getSequence from './seq';
 import { reactive, ReactiveEffect } from '@vue/reactivity';
@@ -357,7 +357,8 @@ export const createRenderer = (renderOptions) => {
       props: {},
       attrs: {},
       propsOptions,
-      component: null
+      component: null,
+      proxy: null, // 用来代理 props attrs data
     }
 
     // 根据 propsOptions 来区分 props 、 attrs
@@ -369,18 +370,53 @@ export const createRenderer = (renderOptions) => {
 
     console.log("instance => ", instance)
 
+    // props attrs data
+
+    const publicProperty = {
+      $attrs: (instance) => instance.attrs,
+      // ...
+    }
+
+    instance.proxy = new Proxy(instance, {
+      get(target, key) {
+        const { state, props } = target
+        if (state && hasOwn(state, key)) {
+          return state[key]
+        } else if (props && hasOwn(props, key)) {
+          return props[key]
+        }
+        const getter = publicProperty[key]; // 通过不同的策略来访问对应的方法
+        if (getter) {
+          return getter(target);
+        }
+      },
+      // 对于一些无法修改的属性， $slots $attrs ... $slots => instance.slots
+      set(target, key, value) {
+        const { state, props } = target
+        if (state && hasOwn(state, key)) {
+          state[key] = value
+        } else if (props && hasOwn(props, key)) {
+          // props[key] = value
+          console.warn("props are readonly")
+          return false
+        }
+        return true
+      }
+    })
+
+
     const componentUpdateFn = () => {
       console.log('state =>', state)
       // 我们要在这里区分，是第一次还是之后的
       if (!instance.isMounted) {
-        const subTree = render.call(state, state) // 通过状态渲染虚拟节点
+        const subTree = render.call(instance.proxy, instance.proxy) // 通过状态渲染虚拟节点
         // vnode -> patch
         patch(null, subTree, container, anchor)
         instance.isMounted = true
         instance.subTree = subTree
       } else {
         // 基于状态的恶组件更新
-        const subTree = render.call(state, state)
+        const subTree = render.call(instance.proxy, instance.proxy)
         patch(instance.subTree, subTree, container, anchor)
         instance.subTree = subTree
       }
