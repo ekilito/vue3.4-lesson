@@ -592,22 +592,46 @@ var createRenderer = (renderOptions2) => {
       patchChildren(n1, n2, container);
     }
   };
-  const mountComponent = (n1, n2, container, anchor) => {
+  const initProps = (instance, rawProps) => {
+    const props = {};
+    const attrs = {};
+    const propsOptions = instance.propsOptions || {};
+    if (rawProps) {
+      for (let key in rawProps) {
+        const value = rawProps[key];
+        if (key in propsOptions) {
+          props[key] = value;
+        } else {
+          attrs[key] = value;
+        }
+      }
+    }
+    instance.attrs = attrs;
+    instance.props = reactive(props);
+  };
+  const mountComponent = (n1, vnode, container, anchor) => {
     const { data = () => {
-    }, render: render3 } = n2.type;
+    }, render: render3, props: propsOptions = {} } = vnode.type;
     const state = reactive(data());
     const instance = {
       state,
       // 状态
-      vnode: n2,
-      // 组件的虚拟节点
+      vnode,
+      // n2 组件的虚拟节点
       subTree: null,
       // 子树
       isMounted: false,
       // 是否挂载完成
-      update: null
+      update: null,
       // 组件的更新函数
+      props: {},
+      attrs: {},
+      propsOptions,
+      component: null
     };
+    vnode.component = instance;
+    initProps(instance, vnode.props);
+    console.log("instance => ", instance);
     const componentUpdateFn = () => {
       console.log("state =>", state);
       if (!instance.isMounted) {

@@ -321,19 +321,53 @@ export const createRenderer = (renderOptions) => {
     }
   };
 
-  const mountComponent = (n1, n2, container, anchor) => {
+  // 初始化更新
+  const initProps = (instance, rawProps) => {
+    const props = {}
+    const attrs = {}
+    const propsOptions = instance.propsOptions || {} // 用户在组件中定义的
+
+    if (rawProps) {
+      for (let key in rawProps) { // 用所有的来分裂
+        const value = rawProps[key]
+        // todo 校验类型
+        if (key in propsOptions) {
+          props[key] = value // props 不需要深度代理，组件不能更改props
+        } else {
+          attrs[key] = value
+        }
+      }
+    }
+    instance.attrs = attrs
+    instance.props = reactive(props)
+  }
+
+  const mountComponent = (n1, vnode, container, anchor) => {
     // 组件可以基于自己的状态重新渲染,effect
-    const { data = () => { }, render } = n2.type // type children props
+    const { data = () => { }, render, props: propsOptions = {} } = vnode.type // type children props
 
     const state = reactive(data())  // 组件的状态
 
     const instance = {
       state, // 状态
-      vnode: n2, // 组件的虚拟节点
+      vnode, // n2 组件的虚拟节点
       subTree: null, // 子树
       isMounted: false, // 是否挂载完成
       update: null, // 组件的更新函数
+      props: {},
+      attrs: {},
+      propsOptions,
+      component: null
     }
+
+    // 根据 propsOptions 来区分 props 、 attrs
+    vnode.component = instance;
+    // 元素更新 n2.el = n1.el
+    // 组件更新 n2.component.subTree.el = n1.component.subTree.el
+
+    initProps(instance, vnode.props);
+
+    console.log("instance => ", instance)
 
     const componentUpdateFn = () => {
       console.log('state =>', state)

@@ -12,30 +12,31 @@
   <script type="module">
     import { render, h, Text, Fragment } from "./runtime-dom.js";
 
-    // 这是一个vue组件
 
-    // 属性 attrs(非响应式) + props(响应式)
-    // 所有属性 - propsOptions = attrs
+    // 这是一个vue组件
     const VueComponent = {
-      // defineProps
-      props: {
-        name: String,
-        count: Number
+      data() {
+        return {
+          name: 'Vue',
+          count: 3
+        }
       },
       render(proxy) {
-        console.log('proxy => ', proxy)
-
+        setTimeout(() => {
+          proxy.count++
+          proxy.count++
+        }, 1000);
         // this 指向组件实例 内部不会通过类来产生实例了
         return h('div', [
-          h(Text, 'Hello ' + proxy.props.name),
-          h('a', proxy.props.count),
+          h(Text, 'Hello ' + proxy.name),
+          h('a', proxy.count),
         ])
       }
     }
 
     // 组件有两个虚拟节点组成 h(VueComponent) => vnode 产生的是组件内的虚拟节点
     // render 函数返回的虚拟节点，这个节点才是最终要显示的内容
-    render(h(VueComponent, { a: 1, b: 2, name: 'vue', count: 3 }), app)
+    render(h(VueComponent), app)
 
   </script>
 </body>
