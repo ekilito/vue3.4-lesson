@@ -3,6 +3,7 @@ import { Fragment, isSameVnode, Text } from './createVnode';
 import getSequence from './seq';
 import { reactive, ReactiveEffect } from '@vue/reactivity';
 import { queueJob } from './scheduler';
+import { createComponentInstance, setupComponent } from './component';
 
 export const createRenderer = (renderOptions) => {
   // core 中不关心如何渲染
@@ -321,92 +322,10 @@ export const createRenderer = (renderOptions) => {
     }
   };
 
-  // 初始化更新
-  const initProps = (instance, rawProps) => {
-    const props = {}
-    const attrs = {}
-    const propsOptions = instance.propsOptions || {} // 用户在组件中定义的
 
-    if (rawProps) {
-      for (let key in rawProps) { // 用所有的来分裂
-        const value = rawProps[key]
-        // todo 校验类型
-        if (key in propsOptions) {
-          props[key] = value // props 不需要深度代理，组件不能更改props
-        } else {
-          attrs[key] = value
-        }
-      }
-    }
-    instance.attrs = attrs
-    instance.props = reactive(props)
-  }
-
-  const mountComponent = (n1, vnode, container, anchor) => {
-    // 组件可以基于自己的状态重新渲染,effect
-    const { data = () => { }, render, props: propsOptions = {} } = vnode.type // type children props
-
-    const state = reactive(data())  // 组件的状态
-
-    const instance = {
-      state, // 状态
-      vnode, // n2 组件的虚拟节点
-      subTree: null, // 子树
-      isMounted: false, // 是否挂载完成
-      update: null, // 组件的更新函数
-      props: {},
-      attrs: {},
-      propsOptions,
-      component: null,
-      proxy: null, // 用来代理 props attrs data
-    }
-
-    // 根据 propsOptions 来区分 props 、 attrs
-    vnode.component = instance;
-    // 元素更新 n2.el = n1.el
-    // 组件更新 n2.component.subTree.el = n1.component.subTree.el
-
-    initProps(instance, vnode.props);
-
-    console.log("instance => ", instance)
-
-    // props attrs data
-
-    const publicProperty = {
-      $attrs: (instance) => instance.attrs,
-      // ...
-    }
-
-    instance.proxy = new Proxy(instance, {
-      get(target, key) {
-        const { state, props } = target
-        if (state && hasOwn(state, key)) {
-          return state[key]
-        } else if (props && hasOwn(props, key)) {
-          return props[key]
-        }
-        const getter = publicProperty[key]; // 通过不同的策略来访问对应的方法
-        if (getter) {
-          return getter(target);
-        }
-      },
-      // 对于一些无法修改的属性， $slots $attrs ... $slots => instance.slots
-      set(target, key, value) {
-        const { state, props } = target
-        if (state && hasOwn(state, key)) {
-          state[key] = value
-        } else if (props && hasOwn(props, key)) {
-          // props[key] = value
-          console.warn("props are readonly")
-          return false
-        }
-        return true
-      }
-    })
-
-
+  const setupRenderEffect = (instance, container, anchor) => {
+    const { render } = instance
     const componentUpdateFn = () => {
-      console.log('state =>', state)
       // 我们要在这里区分，是第一次还是之后的
       if (!instance.isMounted) {
         const subTree = render.call(instance.proxy, instance.proxy) // 通过状态渲染虚拟节点
@@ -428,10 +347,25 @@ export const createRenderer = (renderOptions) => {
     update() // 组件的首次渲染
   }
 
+
+  const mountComponent = (vnode, container, anchor) => {
+
+    // 1. 先创建组件实例
+    const instance = (vnode.component = createComponentInstance(vnode));
+    console.log("instance => ", instance)
+
+    // 2. 给组件的实例赋值
+    setupComponent(instance);
+
+    // 3. 创建一个 effect
+    setupRenderEffect(instance, container, anchor);
+
+  }
+
   const processComponent = (n1, n2, container, anchor) => {
     if (n1 == null) {
       // 组件的挂载
-      mountComponent(n1, n2, container, anchor)
+      mountComponent(n2, container, anchor)
     } else {
       // 组件的更新
       // updateComponent(n1, n2)
