@@ -324,7 +324,7 @@ export const createRenderer = (renderOptions) => {
 
 
   const setupRenderEffect = (instance, container, anchor) => {
-    const { render } = instance
+    const { render } = instance;
     const componentUpdateFn = () => {
       // 我们要在这里区分，是第一次还是之后的
       if (!instance.isMounted) {
@@ -349,7 +349,6 @@ export const createRenderer = (renderOptions) => {
 
 
   const mountComponent = (vnode, container, anchor) => {
-
     // 1. 先创建组件实例
     const instance = (vnode.component = createComponentInstance(vnode));
     console.log("instance => ", instance)
@@ -359,7 +358,48 @@ export const createRenderer = (renderOptions) => {
 
     // 3. 创建一个 effect
     setupRenderEffect(instance, container, anchor);
+  }
 
+  const hasPropsChanged = (prevProps, nextProps) => {
+    const nextKeys = Object.keys(nextProps)
+    if (nextKeys.length !== Object.keys(prevProps).length) {
+      return true
+    }
+    for (let i = 0; i < nextKeys.length; i++) {
+      const key = nextKeys[i]
+      if (nextProps[key] !== prevProps[key]) {
+        return true
+      }
+    }
+    return false
+  }
+
+  const updataProps = (instance, nextProps, prevProps) => {
+    // instance.props
+    if (hasPropsChanged(nextProps, prevProps)) {
+      // 属性是否存在变化
+      for (let key in nextProps) {
+        // 用新的覆盖掉所有老的
+        instance.props[key] = nextProps[key]
+      }
+      for (let key in instance.props) {
+        // 删除老的多余的属性
+        if (!(key in nextProps)) {
+          delete instance.props[key]
+        }
+      }
+    }
+  }
+
+  const updateComponent = (n1, n2) => {
+    // 复用组件的实例
+    const instance = (n2.component = n1.component);
+
+    const { props: prevProps } = n1;
+    const { props: nextProps } = n2;
+    // console.log(prevProps, nextProps) // {address: '北京'} {address: '上海'}
+
+    updataProps(instance, nextProps, prevProps); // children instance.component.proxy
   }
 
   const processComponent = (n1, n2, container, anchor) => {
@@ -368,7 +408,8 @@ export const createRenderer = (renderOptions) => {
       mountComponent(n2, container, anchor)
     } else {
       // 组件的更新
-      // updateComponent(n1, n2)
+      updateComponent(n1, n2)
+      // n1.component.props.address = "珊瑚海"
     }
   }
 

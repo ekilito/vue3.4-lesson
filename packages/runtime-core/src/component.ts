@@ -79,12 +79,12 @@ export const setupComponent = (instance: any) => {
   // 赋值代理对象
   instance.proxy = new Proxy(instance, handler)
 
-  const { data, render } = vnode.type // type children props
-  if (!isFunction(data)) return console.warn("data option must be a function");
-
-  // data 中可以拿到 props
-  instance.data = reactive(data.call(instance.proxy)); // 组件的状态
-
+  const { data = () => { }, render } = vnode.type // type children props
+  if (!isFunction(data)) {
+    console.warn("data option must be a function")
+  } else {
+    // data 中可以拿到 props
+    instance.data = reactive(data.call(instance.proxy)); // 组件的状态
+  }
   instance.render = render;
-
 }
