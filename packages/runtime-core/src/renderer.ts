@@ -322,6 +322,12 @@ export const createRenderer = (renderOptions) => {
     }
   };
 
+  const updateComponentPreRender = (instance, next) => {
+    instance.next = null;
+    instance.vnode = next;
+    updataProps(instance, instance.props, next.props || {});
+  };
+
 
   const setupRenderEffect = (instance, container, anchor) => {
     const { render } = instance;
@@ -334,7 +340,15 @@ export const createRenderer = (renderOptions) => {
         instance.isMounted = true
         instance.subTree = subTree
       } else {
-        // 基于状态的恶组件更新
+        // 基于状态的组件更新
+        const { next } = instance;
+        if (next) {
+          // 更新属性和插槽
+          debugger;
+          console.log("组件更新啦～～～", next);
+          updateComponentPreRender(instance, next);
+          // slots, props
+        }
         const subTree = render.call(instance.proxy, instance.proxy)
         patch(instance.subTree, subTree, container, anchor)
         instance.subTree = subTree
@@ -374,32 +388,45 @@ export const createRenderer = (renderOptions) => {
     return false
   }
 
-  const updataProps = (instance, nextProps, prevProps) => {
-    // instance.props
-    if (hasPropsChanged(nextProps, prevProps)) {
-      // 属性是否存在变化
+  const updataProps = (instance, prevProps, nextProps) => {
+    // instance.props  ->
+
+    if (hasPropsChanged(prevProps, nextProps)) {
+      // 看属性是否存在变化
       for (let key in nextProps) {
         // 用新的覆盖掉所有老的
-        instance.props[key] = nextProps[key]
+        instance.props[key] = nextProps[key]; // 更新
       }
       for (let key in instance.props) {
-        // 删除老的多余的属性
+        // 删除老的多于的
         if (!(key in nextProps)) {
-          delete instance.props[key]
+          delete instance.props[key];
         }
       }
+      // instance.props.address = '上海'
     }
-  }
+  };
+
+  const shouldComponentUpdate = (n1, n2) => {
+    const { props: prevProps, children: prevChildren } = n1;
+    const { props: nextProps, children: nextChildren } = n2;
+
+    if (prevChildren || nextChildren) return true; // 有插槽直接走重新渲染即可
+
+    if (prevProps === nextProps) return false;
+
+    // 如果属性不一致实则更新
+    return hasPropsChanged(prevProps, nextProps || {});
+
+    // updataProps(instance, prevProps, nextProps); // children   instance.component.proxy
+  };
 
   const updateComponent = (n1, n2) => {
-    // 复用组件的实例
-    const instance = (n2.component = n1.component);
-
-    const { props: prevProps } = n1;
-    const { props: nextProps } = n2;
-    // console.log(prevProps, nextProps) // {address: '北京'} {address: '上海'}
-
-    updataProps(instance, nextProps, prevProps); // children instance.component.proxy
+    const instance = (n2.component = n1.component); // 复用组件的实例
+    if (shouldComponentUpdate(n1, n2)) {
+      instance.next = n2; // 如果调用update 有next属性，说明是属性更新，插槽更新
+      instance.update(); // 让更新逻辑统一
+    }
   }
 
   const processComponent = (n1, n2, container, anchor) => {
