@@ -696,7 +696,6 @@ var createRenderer = (renderOptions2) => {
       } else {
         const { next } = instance;
         if (next) {
-          debugger;
           console.log("\u7EC4\u4EF6\u66F4\u65B0\u5566\uFF5E\uFF5E\uFF5E", next);
           updateComponentPreRender(instance, next);
         }

@@ -344,7 +344,7 @@ export const createRenderer = (renderOptions) => {
         const { next } = instance;
         if (next) {
           // 更新属性和插槽
-          debugger;
+          // debugger;
           console.log("组件更新啦～～～", next);
           updateComponentPreRender(instance, next);
           // slots, props
