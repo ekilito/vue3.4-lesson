@@ -12,32 +12,7 @@
   <script type="module">
     import { render, h, Text, Fragment } from "./runtime-dom.js";
 
-    // 这是一个vue组件
 
-    // 组件的更新 有三种方式 （状态， 属性， 插槽）
-
-    const RenderComponent = {
-      props: {
-        address: String
-      },
-      render() {
-        return h(Text, {}, this.address)
-      }
-    }
-
-    const VueComponent = {
-      data() {
-        return { flag: true }
-      },
-      render() {
-        return h(Fragment, null, [
-          h('button', { onClick: () => { this.flag = !this.flag } }, 'click me!'),
-          h(RenderComponent, { address: this.flag ? '北京' : '上海' })
-        ])
-      }
-    }
-
-    render(h(VueComponent, {}), app)
 
   </script>
 </body>
