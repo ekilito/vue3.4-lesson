@@ -10,9 +10,29 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { render, h, Text, Fragment } from "./runtime-dom.js";
+    import { render, h, Text, Fragment, ref } from "./runtime-dom.js";
 
+    // setup 函数, 每个组件只会执行一次，可以放入 compositionApoi reactive ref
+    // 解决反复横跳的问题。computed watch
+    // setup 可以返回 render 函数
 
+    const VueComponent = {
+      setup(props, { emit, attrs, expose, slots }) {
+        // ... reactive computed
+        const a = ref(1);
+
+        // 提供渲染逻辑
+        setTimeout(() => {
+          a.value = 2
+        }, 1000)
+
+        return (proxy) => {
+          return h("div", {}, a.value);
+        }
+      }
+    }
+
+    render(h(VueComponent, {}), app);
 
   </script>
 </body>
