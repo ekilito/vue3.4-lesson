@@ -31,6 +31,9 @@ export const createVnode = (type, props, children?) => {
     if (Array.isArray(children)) {
       // array
       vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
+    } else if (isObject(children)) {
+      // 组件的插槽 object
+      vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN;
     } else {
       // text
       children = String(children);
@@ -40,3 +43,4 @@ export const createVnode = (type, props, children?) => {
 
   return vnode;
 };
+ 

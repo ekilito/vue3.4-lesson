@@ -16,18 +16,24 @@
     // 解决反复横跳的问题。computed watch
     // setup 可以返回 render 函数
 
+    const RenderComponent = {
+      render(proxy) {
+        console.log(proxy.$slots);
+        return h(Fragment, {}, [
+          proxy.$slots.header(),
+          proxy.$slots.footer("footerName")
+        ]);
+      }
+    }
+
     const VueComponent = {
       setup(props, { emit, attrs, expose, slots }) {
-        // ... reactive computed
-        const a = ref(1);
-
-        // 提供渲染逻辑
-        setTimeout(() => {
-          a.value = 2
-        }, 1000)
 
         return (proxy) => {
-          return h("div", {}, a.value);
+          return h(RenderComponent, null, {
+            header: () => h("div", {}, "header slot"),
+            footer: (name) => h("div", {}, "footer slot," + name),
+          });
         }
       }
     }

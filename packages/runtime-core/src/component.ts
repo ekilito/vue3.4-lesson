@@ -1,5 +1,5 @@
 import { proxyRefs, reactive } from '@vue/reactivity'
-import { hasOwn, isFunction } from '@vue/shared'
+import { hasOwn, isFunction, ShapeFlags } from '@vue/shared'
 
 export const createComponentInstance = (vnode: any) => {
   const instance = {
@@ -10,6 +10,7 @@ export const createComponentInstance = (vnode: any) => {
     update: null, // 组件的更新函数
     props: {},
     attrs: {},
+    slots: {},
     propsOptions: vnode.type.props || {}, // 用户传递的 props 配置
     component: null,
     proxy: null, // 用来代理 props attrs data
@@ -42,6 +43,7 @@ const initProps = (instance, rawProps) => {
 
 const publicProperty = {
   $attrs: (instance) => instance.attrs,
+  $slots: (instance) => instance.slots,
   // ...
 }
 
@@ -76,18 +78,28 @@ const handler = {
   }
 }
 
+export const initSlots = (instance, children) => {
+  if (instance.vnode.shapeFlag & ShapeFlags.SLOTS_CHILDREN) {
+    instance.slots = children;
+  } else {
+    instance.slots = {};
+  }
+}
+
 
 export const setupComponent = (instance: any) => {
   const { vnode } = instance;
   // 赋值属性
   initProps(instance, vnode.props);
+  initSlots(instance, vnode.children); // instance.slots = children;
+
   // 赋值代理对象
   instance.proxy = new Proxy(instance, handler)
 
   const { data = () => { }, render, setup } = vnode.type // type children props
   if (setup) {
     const setupContext = {
-
+      //...
     }
     const setupResult = setup(instance.props, setupContext);
 
