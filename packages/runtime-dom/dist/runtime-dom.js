@@ -748,7 +748,9 @@ var setupComponent = (instance) => {
         instance.exposed = exposed || {};
       }
     };
+    setCurrentInstance(instance);
     const setupResult = setup(instance.props, setupContext);
+    unsetCurrentInstance();
     if (isFunction(setupResult)) {
       instance.render = setupResult;
     } else if (typeof setupResult === "object") {
@@ -764,6 +766,47 @@ var setupComponent = (instance) => {
     instance.render = render2;
   }
 };
+var currentInstance = null;
+var getCurrentInstance = () => {
+  return currentInstance;
+};
+var setCurrentInstance = (instance) => {
+  currentInstance = instance;
+};
+var unsetCurrentInstance = () => {
+  currentInstance = null;
+};
+
+// packages/runtime-core/src/apiLifecycle.ts
+var LifeCycles = /* @__PURE__ */ ((LifeCycles2) => {
+  LifeCycles2["BEFORE_MOUNT"] = "bm";
+  LifeCycles2["MOUNTED"] = "m";
+  LifeCycles2["BEFORE_UPDATE"] = "bu";
+  LifeCycles2["UPDATED"] = "u";
+  return LifeCycles2;
+})(LifeCycles || {});
+function createHook(type) {
+  return (hook, target = currentInstance) => {
+    if (target) {
+      const hooks = target[type] || (target[type] = []);
+      const wrapHook = () => {
+        setCurrentInstance(target);
+        hook.call(target);
+        unsetCurrentInstance();
+      };
+      hooks.push(wrapHook);
+    }
+  };
+}
+var onBeforeMount = createHook("bm" /* BEFORE_MOUNT */);
+var onMounted = createHook("m" /* MOUNTED */);
+var onBeforeUpdate = createHook("bu" /* BEFORE_UPDATE */);
+var onUpdated = createHook("u" /* UPDATED */);
+function invokeArray(fns) {
+  for (let i = 0; i < fns.length; i++) {
+    fns[i]();
+  }
+}
 
 // packages/runtime-core/src/renderer.ts
 var createRenderer = (renderOptions2) => {
@@ -970,20 +1013,33 @@ var createRenderer = (renderOptions2) => {
   const setupRenderEffect = (instance, container, anchor) => {
     const { render: render3 } = instance;
     const componentUpdateFn = () => {
+      const { bm, m } = instance;
       if (!instance.isMounted) {
+        if (bm) {
+          invokeArray(bm);
+        }
         const subTree = render3.call(instance.proxy, instance.proxy);
         patch(null, subTree, container, anchor);
         instance.isMounted = true;
         instance.subTree = subTree;
+        if (m) {
+          invokeArray(m);
+        }
       } else {
-        const { next } = instance;
+        const { next, bu, u } = instance;
         if (next) {
           console.log("\u7EC4\u4EF6\u66F4\u65B0\u5566\uFF5E\uFF5E\uFF5E", next);
           updateComponentPreRender(instance, next);
         }
+        if (bu) {
+          invokeArray(bu);
+        }
         const subTree = render3.call(instance.proxy, instance.proxy);
         patch(instance.subTree, subTree, container, anchor);
         instance.subTree = subTree;
+        if (u) {
+          invokeArray(u);
+        }
       }
     };
     const effect2 = new ReactiveEffect(componentUpdateFn, () => queueJob(update));
@@ -1113,6 +1169,7 @@ var render = (vNode, container) => {
 };
 export {
   Fragment,
+  LifeCycles,
   ReactiveEffect,
   Teleport,
   Text,
@@ -1121,19 +1178,27 @@ export {
   createComponentInstance,
   createRenderer,
   createVnode,
+  currentInstance,
   effect,
+  getCurrentInstance,
   h,
   initSlots,
+  invokeArray,
   isReactive,
   isRef,
   isSameVnode,
   isTeleport,
   isVnode,
+  onBeforeMount,
+  onBeforeUpdate,
+  onMounted,
+  onUpdated,
   proxyRefs,
   reactive,
   ref,
   render,
   renderOptions,
+  setCurrentInstance,
   setupComponent,
   toReactive,
   toRef,
@@ -1142,6 +1207,7 @@ export {
   trackRefValue,
   triggerEffects,
   triggerRefValue,
+  unsetCurrentInstance,
   watch,
   watchEffect
 };

@@ -114,7 +114,9 @@ export const setupComponent = (instance: any) => {
         instance.exposed = exposed || {}
       }
     }
+    setCurrentInstance(instance); // 设置当前实例
     const setupResult = setup(instance.props, setupContext);
+    unsetCurrentInstance(); // 清除当前实例
 
     if (isFunction(setupResult)) {
       instance.render = setupResult;
@@ -131,4 +133,18 @@ export const setupComponent = (instance: any) => {
   if (!instance.render) {
     instance.render = render;
   }
+}
+
+export let currentInstance = null;
+// 获取当前实例
+export const getCurrentInstance = () => {
+  return currentInstance;
+}
+
+export const setCurrentInstance = (instance) => {
+  currentInstance = instance;
+}
+
+export const unsetCurrentInstance = () => {
+  currentInstance = null;
 }

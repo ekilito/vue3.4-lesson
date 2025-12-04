@@ -4,6 +4,7 @@ import getSequence from './seq';
 import { reactive, ReactiveEffect } from '@vue/reactivity';
 import { queueJob } from './scheduler';
 import { createComponentInstance, setupComponent } from './component';
+import { invokeArray } from './apiLifecycle';
 
 export const createRenderer = (renderOptions) => {
   // core 中不关心如何渲染
@@ -303,7 +304,7 @@ export const createRenderer = (renderOptions) => {
     if (n1 == null) {
       // 1. 虚拟节点要关联真实节点
       // 2. 将节点插入要页面中
-      hostInsert(n2.el = hostCreateText(n2.children), container)
+      hostInsert((n2.el = hostCreateText(n2.children)), container);
     } else {
       const el = n2.el = n1.el;
       if (n1.children !== n2.children) {
@@ -333,15 +334,23 @@ export const createRenderer = (renderOptions) => {
     const { render } = instance;
     const componentUpdateFn = () => {
       // 我们要在这里区分，是第一次还是之后的
+      const { bm, m } = instance; // 生命周期钩子
       if (!instance.isMounted) {
+        if (bm) {
+          invokeArray(bm);
+        }
         const subTree = render.call(instance.proxy, instance.proxy) // 通过状态渲染虚拟节点
         // vnode -> patch
         patch(null, subTree, container, anchor)
         instance.isMounted = true
         instance.subTree = subTree
+
+        if (m) {
+          invokeArray(m);
+        }
       } else {
         // 基于状态的组件更新
-        const { next } = instance;
+        const { next, bu, u } = instance;
         if (next) {
           // 更新属性和插槽
           // debugger;
@@ -349,9 +358,15 @@ export const createRenderer = (renderOptions) => {
           updateComponentPreRender(instance, next);
           // slots, props
         }
+        if (bu) {
+          invokeArray(bu);
+        }
         const subTree = render.call(instance.proxy, instance.proxy)
         patch(instance.subTree, subTree, container, anchor)
         instance.subTree = subTree
+        if (u) {
+          invokeArray(u);
+        }
       }
     }
 
