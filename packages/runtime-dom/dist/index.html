@@ -17,18 +17,19 @@
     // setup 可以返回 render 函数
 
     const RenderComponent = {
-      render(proxy) {
-        console.log(proxy.$slots);
-        return h(Fragment, {}, [
-          proxy.$slots.header(),
-          proxy.$slots.footer("footerName")
-        ]);
+      setup(props, { emit, attrs, expose, slots }) {
+        return (proxy) => {
+          // console.log(proxy.$slots);
+          return h(Fragment, {}, [
+            slots.header(),
+            slots.footer("footerName")
+          ]);
+        }
       }
     }
 
     const VueComponent = {
-      setup(props, { emit, attrs, expose, slots }) {
-
+      setup(props) {
         return (proxy) => {
           return h(RenderComponent, null, {
             header: () => h("div", {}, "header slot"),

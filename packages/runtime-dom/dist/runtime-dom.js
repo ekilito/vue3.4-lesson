@@ -706,6 +706,8 @@ var setupComponent = (instance) => {
   if (setup) {
     const setupContext = {
       //...
+      slots: instance.slots,
+      attrs: instance.attrs
     };
     const setupResult = setup(instance.props, setupContext);
     if (isFunction(setupResult)) {

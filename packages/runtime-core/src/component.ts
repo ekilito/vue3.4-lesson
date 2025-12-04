@@ -100,6 +100,8 @@ export const setupComponent = (instance: any) => {
   if (setup) {
     const setupContext = {
       //...
+      slots: instance.slots,
+      attrs: instance.attrs,
     }
     const setupResult = setup(instance.props, setupContext);
 
