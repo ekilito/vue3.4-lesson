@@ -1,4 +1,5 @@
-import { isObject, isString, ShapeFlags } from '@vue/shared';
+import { isObject, isString, isFunction, ShapeFlags } from '@vue/shared';
+import { isTeleport } from "./components/Teleport";
 
 export const isVnode = (value) => {
   return value?.__v_isVnode;
@@ -13,10 +14,15 @@ export const Fragment = Symbol("Fragment")
 
 export const createVnode = (type, props, children?) => {
   const shapeFlag = isString(type)
-    ? ShapeFlags.ELEMENT  // 元素
-    : isObject(type)
-      ? ShapeFlags.STATEFUL_COMPONENT // 组件
-      : 0;
+    ? ShapeFlags.ELEMENT // 元素
+    : isTeleport(type)
+      ? ShapeFlags.TELEPORT
+      : isObject(type)
+        ? ShapeFlags.STATEFUL_COMPONENT
+        : isFunction(type)
+          ? ShapeFlags.FUNCTIONAL_COMPONENT // 组件
+          : 0;
+
   const vnode = {
     __v_isVnode: true, // 表示是 虚拟节点
     type,
@@ -43,4 +49,3 @@ export const createVnode = (type, props, children?) => {
 
   return vnode;
 };
- 

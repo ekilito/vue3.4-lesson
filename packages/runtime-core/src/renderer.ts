@@ -468,6 +468,16 @@ export const createRenderer = (renderOptions) => {
         if (shapeFlag & ShapeFlags.ELEMENT) {
           // 对元素的处理
           processElement(n1, n2, container, anchor)
+        } else if (shapeFlag & ShapeFlags.TELEPORT) {
+          // 对 teleport 组件的处理
+          type.process(n1, n2, container, anchor, null, {
+            mountChildren,
+            patchChildren,
+            move: (vnode, container, anchor) => {
+              // 词方法可以将组件 或者 dom元素移动道指定的位置
+              hostInsert(vnode.component ? vnode.component.subTree.el : vnode.el, container, anchor);
+            },
+          });
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
           // 对组件的处理, vue3中函数式组件，已经废弃了， 没有性能节约
           processComponent(n1, n2, container, anchor)

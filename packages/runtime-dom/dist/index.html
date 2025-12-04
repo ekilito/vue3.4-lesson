@@ -12,20 +12,7 @@
   <script type="module">
     import { render, h, Text, Fragment, ref } from "./runtime-dom.js";
 
-    // setup 函数, 每个组件只会执行一次，可以放入 compositionApoi reactive ref
-    // 解决反复横跳的问题。computed watch
-    // setup 可以返回 render 函数
 
-    const VueComponent = {
-      setup(props, { emit, expose, slots, attrs }) {
-        return (proxy) => {
-          return h("button", { onClick: () => emit("myEvent", 100) }, "click me");
-        }
-      }
-    }
-
-    // vnode.types.props
-    render(h(VueComponent, { onMyEvent: (value) => { console.log(value) } }), app);
 
   </script>
 </body>
