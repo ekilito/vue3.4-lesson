@@ -476,9 +476,14 @@ export const createRenderer = (renderOptions) => {
   };
 
   const unmount = (vnode) => {
+    const { shapeFlag } = vnode;
     if (vnode.type === Fragment) {
       // 如果是碎片 需要卸载子节点
       unmountChildren(vnode.children);
+    } else if (shapeFlag & ShapeFlags.COMPONENT) {
+      debugger
+      // 组件卸载
+      unmount(vnode.component.subTree);
     } else {
       const el = vnode.el;
       if (el && el.parentNode) {

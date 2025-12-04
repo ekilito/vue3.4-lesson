@@ -24,8 +24,15 @@
       }
     }
 
+    // 给组件绑定事件 <div @myEvent="onMyEvent"></div>
+
     // vnode.types.props
     render(h(VueComponent, { onMyEvent: (value) => { console.log(value) } }), app);
+
+    // 组件卸载
+    setTimeout(() => {
+      render(h(null, { onMyEvent: (value) => { console.log(value) } }), app);
+    }, 2000);
 
   </script>
 </body>

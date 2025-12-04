@@ -633,8 +633,10 @@ var createComponentInstance = (vnode) => {
     component: null,
     proxy: null,
     // 用来代理 props attrs data
-    setupState: {}
+    setupState: {},
     // setup 返回的状态
+    exposed: null
+    // 暴露给外部的属性
   };
   return instance;
 };
@@ -707,7 +709,17 @@ var setupComponent = (instance) => {
     const setupContext = {
       //...
       slots: instance.slots,
-      attrs: instance.attrs
+      attrs: instance.attrs,
+      emit(event, ...args) {
+        const eventName = `on${event[0].toUpperCase() + event.slice(1)}`;
+        const handler2 = instance.vnode.props && instance.vnode.props[eventName];
+        if (handler2) {
+          handler2(...args);
+        }
+      },
+      expose(exposed) {
+        instance.exposed = exposed || {};
+      }
     };
     const setupResult = setup(instance.props, setupContext);
     if (isFunction(setupResult)) {
@@ -1030,8 +1042,12 @@ var createRenderer = (renderOptions2) => {
     }
   };
   const unmount = (vnode) => {
+    const { shapeFlag } = vnode;
     if (vnode.type === Fragment) {
       unmountChildren(vnode.children);
+    } else if (shapeFlag & 6 /* COMPONENT */) {
+      debugger;
+      unmount(vnode.component.subTree);
     } else {
       const el = vnode.el;
       if (el && el.parentNode) {

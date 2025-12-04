@@ -15,6 +15,7 @@ export const createComponentInstance = (vnode: any) => {
     component: null,
     proxy: null, // 用来代理 props attrs data
     setupState: {}, // setup 返回的状态
+    exposed: null, // 暴露给外部的属性
   }
 
   return instance
@@ -102,6 +103,16 @@ export const setupComponent = (instance: any) => {
       //...
       slots: instance.slots,
       attrs: instance.attrs,
+      emit(event: string, ...args: any[]) {
+        const eventName = `on${event[0].toUpperCase() + event.slice(1)}`
+        const handler = instance.vnode.props && instance.vnode.props[eventName]
+        if (handler) {
+          handler(...args)
+        }
+      },
+      expose(exposed) {
+        instance.exposed = exposed || {}
+      }
     }
     const setupResult = setup(instance.props, setupContext);
 
