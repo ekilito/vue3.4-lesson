@@ -12,7 +12,11 @@
   <script type="module">
     import { render, h, Text, Fragment, ref, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, getCurrentInstance } from "./runtime-dom.js";
 
+    const functionalComponent = (props) => {
+      return h("div", props.msg)
+    };
 
+    render(h(functionalComponent, { msg: "hello!" }), app);
   </script>
 </body>
 

@@ -1011,6 +1011,14 @@ var createRenderer = (renderOptions2) => {
     instance.vnode = next;
     updataProps(instance, instance.props, next.props || {});
   };
+  const renderComponent = (instance) => {
+    const { render: render3, vnode, proxy, props, attrs } = instance;
+    if (vnode.shapeFlag & 4 /* STATEFUL_COMPONENT */) {
+      return render3.call(proxy, proxy);
+    } else {
+      return vnode.type(attrs);
+    }
+  };
   const setupRenderEffect = (instance, container, anchor) => {
     const { render: render3 } = instance;
     const componentUpdateFn = () => {
@@ -1019,7 +1027,7 @@ var createRenderer = (renderOptions2) => {
         if (bm) {
           invokeArray(bm);
         }
-        const subTree = render3.call(instance.proxy, instance.proxy);
+        const subTree = renderComponent(instance);
         patch(null, subTree, container, anchor);
         instance.isMounted = true;
         instance.subTree = subTree;
@@ -1035,7 +1043,7 @@ var createRenderer = (renderOptions2) => {
         if (bu) {
           invokeArray(bu);
         }
-        const subTree = render3.call(instance.proxy, instance.proxy);
+        const subTree = renderComponent(instance);
         patch(instance.subTree, subTree, container, anchor);
         instance.subTree = subTree;
         if (u) {

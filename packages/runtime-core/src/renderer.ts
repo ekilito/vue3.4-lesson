@@ -329,6 +329,20 @@ export const createRenderer = (renderOptions) => {
     updataProps(instance, instance.props, next.props || {});
   };
 
+  // 渲染组件
+  const renderComponent = (instance) => {
+    // attrs + props = 属性
+    const { render, vnode, proxy, props, attrs } = instance;
+
+    // 状态组件
+    if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+      return render.call(proxy, proxy);
+    } else {
+      // 函数式组件
+      return vnode.type(attrs)
+    }
+  }
+
 
   const setupRenderEffect = (instance, container, anchor) => {
     const { render } = instance;
@@ -339,7 +353,7 @@ export const createRenderer = (renderOptions) => {
         if (bm) {
           invokeArray(bm);
         }
-        const subTree = render.call(instance.proxy, instance.proxy) // 通过状态渲染虚拟节点
+        const subTree = renderComponent(instance) // 通过状态渲染虚拟节点
         // vnode -> patch
         patch(null, subTree, container, anchor)
         instance.isMounted = true
@@ -361,7 +375,7 @@ export const createRenderer = (renderOptions) => {
         if (bu) {
           invokeArray(bu);
         }
-        const subTree = render.call(instance.proxy, instance.proxy)
+        const subTree = renderComponent(instance)
         patch(instance.subTree, subTree, container, anchor)
         instance.subTree = subTree
         if (u) {
