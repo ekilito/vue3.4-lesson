@@ -148,7 +148,8 @@ var createVnode = (type, props, children) => {
     // diff 算法中后面需要的 key
     el: null,
     // 虚拟节点需要对应的真实节点是谁
-    shapeFlag
+    shapeFlag,
+    ref: props?.ref
   };
   if (children) {
     if (Array.isArray(children)) {
@@ -1108,7 +1109,7 @@ var createRenderer = (renderOptions2) => {
       unmount(n1);
       n1 = null;
     }
-    const { type, shapeFlag } = n2;
+    const { type, shapeFlag, ref: ref2 } = n2;
     switch (type) {
       case Text:
         processText(n1, n2, container);
@@ -1130,6 +1131,15 @@ var createRenderer = (renderOptions2) => {
         } else if (shapeFlag & 6 /* COMPONENT */) {
           processComponent(n1, n2, container, anchor);
         }
+    }
+    if (ref2 !== null) {
+      setRef(ref2, n2);
+    }
+  };
+  const setRef = (rawRef, vnode) => {
+    let value = vnode.shapeFlag & 4 /* STATEFUL_COMPONENT */ ? vnode.component.exposed || vnode.component.proxy : vnode.el;
+    if (isRef(rawRef)) {
+      rawRef.value = value;
     }
   };
   const unmount = (vnode) => {
