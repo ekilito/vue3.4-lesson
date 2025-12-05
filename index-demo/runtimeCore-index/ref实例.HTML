@@ -17,6 +17,9 @@
         a: Number
       },
       setup(props, { emit, expose, slots, attrs }) {
+        expose({
+          a: 200
+        })
         return () => {
           return h("div", props.value)
         }
@@ -27,7 +30,13 @@
       setup(props, { emit, expose, slots, attrs }) {
         const comp = ref(null)
 
+        // 1. 内部 如果ref 放到组件上，指代的是组件实例，如果当前组件有expose，指代的是expose
+        // 2. 如果放到 dom 元素的上指代的就是dom 元素
+        onMounted(() => {
+          console.log(comp.value) // 这个获取的是组件的实例
+        })
         return () => {
+          // return h(Child, { ref: comp, a: 100 })
           return h("div", { ref: comp, a: 100 })
         }
       }
