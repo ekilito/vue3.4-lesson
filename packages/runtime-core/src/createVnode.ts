@@ -16,7 +16,7 @@ export const createVnode = (type, props, children?) => {
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT // 元素
     : isTeleport(type)
-      ? ShapeFlags.TELEPORT
+      ? ShapeFlags.TELEPORT // teleport
       : isObject(type)
         ? ShapeFlags.STATEFUL_COMPONENT // 组件
         : isFunction(type)

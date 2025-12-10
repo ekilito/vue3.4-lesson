@@ -515,11 +515,11 @@ export const createRenderer = (renderOptions) => {
           processElement(n1, n2, container, anchor, parentComponent)
         } else if (shapeFlag & ShapeFlags.TELEPORT) {
           // 对 teleport 组件的处理
-          type.process(n1, n2, container, anchor, null, {
+          type.process(n1, n2, container, anchor, parentComponent, {
             mountChildren,
             patchChildren,
             move: (vnode, container, anchor) => {
-              // 词方法可以将组件 或者 dom元素移动道指定的位置
+              // 此方法可以将组件 或者 dom元素移动道指定的位置
               hostInsert(vnode.component ? vnode.component.subTree.el : vnode.el, container, anchor);
             },
           });
@@ -551,6 +551,8 @@ export const createRenderer = (renderOptions) => {
       debugger
       // 组件卸载
       unmount(vnode.component.subTree);
+    } else if (shapeFlag & ShapeFlags.TELEPORT) {
+      vnode.type.remove(vnode, unmountChildren);
     } else {
       const el = vnode.el;
       if (el && el.parentNode) {

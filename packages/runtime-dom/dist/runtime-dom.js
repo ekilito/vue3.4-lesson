@@ -1144,7 +1144,7 @@ var createRenderer = (renderOptions2) => {
         if (shapeFlag & 1 /* ELEMENT */) {
           processElement(n1, n2, container, anchor, parentComponent);
         } else if (shapeFlag & 64 /* TELEPORT */) {
-          type.process(n1, n2, container, anchor, null, {
+          type.process(n1, n2, container, anchor, parentComponent, {
             mountChildren,
             patchChildren,
             move: (vnode, container2, anchor2) => {
@@ -1172,6 +1172,8 @@ var createRenderer = (renderOptions2) => {
     } else if (shapeFlag & 6 /* COMPONENT */) {
       debugger;
       unmount(vnode.component.subTree);
+    } else if (shapeFlag & 64 /* TELEPORT */) {
+      vnode.type.remove(vnode, unmountChildren);
     } else {
       const el = vnode.el;
       if (el && el.parentNode) {

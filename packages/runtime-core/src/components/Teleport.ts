@@ -6,6 +6,7 @@ export const Teleport = {
     // vnode.type.remove(vnode, unmount);
 
     const { shapeFlag, children } = vnode;
+    // console.log(shapeFlag) // 80
     if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       unmountChildren(children);
     }

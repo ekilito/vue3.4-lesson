@@ -9,9 +9,17 @@
 
 <body>
   <div id="app"></div>
+  <div id="root"></div>
   <script type="module">
-    import { render, h, Text, Fragment, ref, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, getCurrentInstance, provide, inject } from "./runtime-dom.js";
+    import { render, h, Text, Fragment, ref, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, getCurrentInstance, provide, inject, Teleport } from "./runtime-dom.js";
 
+    render(h(Teleport, { to: "#root" }, [
+      h('div', 'This is teleported content')
+    ]), app);
+
+    setTimeout(() => {
+      render(null, app)
+    }, 1000);
 
   </script>
 </body>
