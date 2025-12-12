@@ -1,7 +1,11 @@
 // packages/runtime-dom/src/nodeOps.ts
 var nodeOps = {
   // 如果第三个元素不传递 === appendChild
-  insert: (el, parent, anchor) => parent.insertBefore(el, anchor || null),
+  // insert: (el, parent, anchor) => parent.insertBefore(el, anchor || null),
+  insert: (el, parent, anchor) => {
+    const anchorNode = anchor && anchor.nodeType === 1 ? anchor : null;
+    parent.insertBefore(el, anchorNode);
+  },
   // appendChild  parent.insertBefore(el,null)
   remove(el) {
     const parent = el.parentNode;
@@ -844,7 +848,7 @@ var createRenderer = (renderOptions2) => {
   };
   const mountElement = (vnode, container, anchor, parentComponent) => {
     console.log("vnode =>", vnode);
-    const { type, children, props, shapeFlag } = vnode;
+    const { type, children, props, shapeFlag, transition } = vnode;
     const el = hostCreateElement(type);
     vnode.el = el;
     if (props) {
@@ -857,7 +861,13 @@ var createRenderer = (renderOptions2) => {
     } else if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
       mountChildren(children, el, parentComponent);
     }
+    if (transition) {
+      transition.beforeEnter(el);
+    }
     hostInsert(el, container, anchor);
+    if (transition) {
+      transition.enter(el);
+    }
   };
   const processElement = (n1, n2, container, anchor, parentComponent) => {
     if (n1 === null) {
@@ -1025,13 +1035,14 @@ var createRenderer = (renderOptions2) => {
     instance.next = null;
     instance.vnode = next;
     updataProps(instance, instance.props, next.props || {});
+    Object.assign(instance.slots, next.children);
   };
   const renderComponent = (instance) => {
-    const { render: render3, vnode, proxy, props, attrs } = instance;
+    const { render: render3, vnode, proxy, props, attrs, slots } = instance;
     if (vnode.shapeFlag & 4 /* STATEFUL_COMPONENT */) {
       return render3.call(proxy, proxy);
     } else {
-      return vnode.type(attrs);
+      return vnode.type(attrs, { slots });
     }
   };
   const setupRenderEffect = (instance, container, anchor, parentComponent) => {
@@ -1166,7 +1177,7 @@ var createRenderer = (renderOptions2) => {
     }
   };
   const unmount = (vnode) => {
-    const { shapeFlag } = vnode;
+    const { shapeFlag, transition, el } = vnode;
     if (vnode.type === Fragment) {
       unmountChildren(vnode.children);
     } else if (shapeFlag & 6 /* COMPONENT */) {
@@ -1175,9 +1186,11 @@ var createRenderer = (renderOptions2) => {
     } else if (shapeFlag & 64 /* TELEPORT */) {
       vnode.type.remove(vnode, unmountChildren);
     } else {
-      const el = vnode.el;
-      if (el && el.parentNode) {
-        hostRemove(el);
+      if (transition) {
+      }
+      const el2 = vnode.el;
+      if (el2 && el2.parentNode) {
+        hostRemove(el2);
       }
     }
   };
@@ -1219,6 +1232,92 @@ function inject(key, defaultValue) {
   }
 }
 
+// packages/runtime-core/src/components/Transition.ts
+function nextFrame(fn) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(fn);
+  });
+}
+function resolveTransitionProps(props) {
+  const {
+    name = "v",
+    enterFromClass = `${name}-enter-from`,
+    enterActiveClass = `${name}-enter-active`,
+    enterToClass = `${name}-enter-to`,
+    leaveFromClass = `${name}-leave-from`,
+    leaveActiveClass = `${name}-leave-active`,
+    leaveToClass = `${name}-leave-to`,
+    onBeforeEnter,
+    onEnter,
+    onLeave
+  } = props;
+  return {
+    onBeforeEnter(el) {
+      onBeforeEnter && onBeforeEnter(el);
+      el.classList.add(enterFromClass);
+      el.classList.add(enterActiveClass);
+    },
+    onEnter(el, done) {
+      const resolve = () => {
+        el.classList.remove(enterToClass);
+        el.classList.remove(enterActiveClass);
+        done && done();
+      };
+      onEnter && onEnter(el, resolve);
+      nextFrame(() => {
+        el.classList.remove(enterFromClass);
+        el.classList.add(enterToClass);
+        if (!onEnter || onEnter.length <= 1) {
+          el.addEventListener("transitionEnd", resolve);
+        }
+      });
+    },
+    onLeave(el, done) {
+      const resolve = () => {
+        el.classList.remove(leaveActiveClass);
+        el.classList.remove(leaveToClass);
+        done && done();
+      };
+      onLeave && onLeave(el, resolve);
+      el.classList.add(leaveFromClass);
+      document.body.offsetHeight;
+      el.classList.add(leaveActiveClass);
+      nextFrame(() => {
+        el.classList.remove(leaveFromClass);
+        el.classList.add(leaveToClass);
+        if (!onLeave || onLeave.length <= 1) {
+          el.addEventListener("transitionend", resolve);
+        }
+      });
+    }
+  };
+}
+function Transition(props, { slots }) {
+  return h(BaseTranstionImpl, resolveTransitionProps(props), slots);
+}
+var BaseTranstionImpl = {
+  // 真正的组件 只需要渲染难的时候调用封装后的钩子即可
+  props: {
+    onBeforeEnter: Function,
+    onEnter: Function,
+    onLeave: Function
+  },
+  setup(props, { slots }) {
+    return () => {
+      const vnode = slots.default && slots.default();
+      if (!vnode) {
+        return;
+      }
+      vnode.transition = {
+        beforeEnter: props.onBeforeEnter,
+        enter: props.onEnter,
+        leave: props.onLeave
+      };
+      return vnode;
+    };
+  }
+};
+
 // packages/runtime-dom/src/index.ts
 var renderOptions = Object.assign({ patchProp }, nodeOps);
 var render = (vNode, container) => {
@@ -1230,6 +1329,7 @@ export {
   ReactiveEffect,
   Teleport,
   Text,
+  Transition,
   activeEffect,
   computed,
   createComponentInstance,
@@ -1257,6 +1357,7 @@ export {
   ref,
   render,
   renderOptions,
+  resolveTransitionProps,
   setCurrentInstance,
   setupComponent,
   toReactive,

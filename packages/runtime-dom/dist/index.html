@@ -10,11 +10,59 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { render, h, Text, Fragment, ref, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, getCurrentInstance, provide, inject, Teleport } from "./runtime-dom.js";
+    import { render, h, Text, Fragment, ref, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, getCurrentInstance, provide, inject, Teleport, Transition } from "./runtime-dom.js";
+    // import { h } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js";
 
+    const props = {
+      name: "v",
+      onBeforeEnter(...args) {
+        console.log(args, "onBeforeEnter");
+      },
+      onEnter(...args) {
+        console.log(args, "onEnter");
+      },
+      onLeave(...args) {
+        console.log(args, "onLeave");
+      },
+    };
 
+    const App = {
+      setup() {
+        const show = ref(true);
 
+        // render 函数
+        return () => h('div', [
+          h('button', {
+            onClick: () => {
+              show.value = !show.value;
+              console.log('show:', show.value);
+            }
+          }, 'Toggle'),
+
+          h(Transition, props, {
+            default: () => {
+              return show.value ? h('div', 'hello') : null
+            }
+          })
+        ]);
+      }
+    }
+
+    render(h(App, {}), app);
   </script>
+
+  <style>
+    /* 下面我们会解释这些 class 是做什么的 */
+    .v-enter-active,
+    .v-leave-active {
+      transition: opacity 4s ease;
+    }
+
+    .v-enter-from,
+    .v-leave-to {
+      opacity: 0;
+    }
+  </style>
 </body>
 
 </html>

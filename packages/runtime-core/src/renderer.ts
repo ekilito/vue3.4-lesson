@@ -46,7 +46,7 @@ export const createRenderer = (renderOptions) => {
 
   const mountElement = (vnode, container, anchor, parentComponent) => {
     console.log("vnode =>", vnode)
-    const { type, children, props, shapeFlag } = vnode
+    const { type, children, props, shapeFlag, transition } = vnode
 
     // 第一次渲染的时候让虚拟节点和真实dom 创建关联 vnode.el = 真实dom
     // 第二次渲染新的 vnode， 可以和上一次的vnode 做对比，之后更新对应的el元素，可以后续再复用这个dom元素
@@ -64,7 +64,15 @@ export const createRenderer = (renderOptions) => {
       mountChildren(children, el, parentComponent)
     }
 
+    if (transition) {
+      transition.beforeEnter(el)
+    }
+
     hostInsert(el, container, anchor)
+
+    if (transition) {
+      transition.enter(el)
+    }
   }
 
   const processElement = (n1, n2, container, anchor, parentComponent) => {
@@ -343,19 +351,21 @@ export const createRenderer = (renderOptions) => {
     instance.next = null;
     instance.vnode = next;
     updataProps(instance, instance.props, next.props || {});
+    // 组件更新的时候，需要更新插槽
+    Object.assign(instance.slots, next.children)
   };
 
   // 渲染组件
   const renderComponent = (instance) => {
     // attrs + props = 属性
-    const { render, vnode, proxy, props, attrs } = instance;
+    const { render, vnode, proxy, props, attrs, slots } = instance;
 
     // 状态组件
     if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
       return render.call(proxy, proxy);
     } else {
       // 函数式组件
-      return vnode.type(attrs)
+      return vnode.type(attrs, { slots })
     }
   }
 
@@ -543,7 +553,8 @@ export const createRenderer = (renderOptions) => {
   }
 
   const unmount = (vnode) => {
-    const { shapeFlag } = vnode;
+    const { shapeFlag, transition, el } = vnode;
+    // const performRemove = () =>  hostRemove(vnode.el);
     if (vnode.type === Fragment) {
       // 如果是碎片 需要卸载子节点
       unmountChildren(vnode.children);
@@ -554,6 +565,9 @@ export const createRenderer = (renderOptions) => {
     } else if (shapeFlag & ShapeFlags.TELEPORT) {
       vnode.type.remove(vnode, unmountChildren);
     } else {
+      if (transition) {
+        // transition.leave(el,performRemove)
+      }
       const el = vnode.el;
       if (el && el.parentNode) {
         hostRemove(el);
