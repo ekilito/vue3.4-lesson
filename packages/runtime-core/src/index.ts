@@ -9,4 +9,4 @@ export * from "./apiProvide";
 export * from "./components/Teleport";
 export * from "./components/Transition";
 export * from "./components/KeepAlive";
-// export * from "./defineAsyncComponent";
+export * from "./defineAsyncComponent";
