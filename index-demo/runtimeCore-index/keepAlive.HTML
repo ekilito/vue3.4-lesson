@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>runtime-core</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { render, h, Text, Fragment, ref, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, getCurrentInstance, provide, inject, Teleport, Transition, KeepAlive } from "./runtime-dom.js";
+    // import { h } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js";
+
+    // keep-alive
+    // 缓存的是dom ，keep-alive 缓存后不会重新渲染，而是复用原来的dom元素
+    // 1. 组件不会被重新创建，会将上次的结果拿出来返回
+    // 2. 组件不会被卸载，而是将dom移除掉
+    // 3. 内部需要缓存dom
+
+    let keepAliveProps = { max: 2 }
+
+    const A1 = {
+      setup() {
+        onMounted(() => {
+          console.log('a1 mounted')
+        })
+        return () => {
+          return h("h1", "a1")
+        }
+      }
+    }
+
+    const A2 = {
+      setup() {
+        onMounted(() => {
+          console.log('a2 mounted')
+        })
+        return () => {
+          return h("h1", "a2")
+        }
+      }
+    }
+
+    const A3 = {
+      setup() {
+        onMounted(() => {
+          console.log('a3 mounted')
+        })
+        return () => {
+          return h("h1", "a3")
+        }
+      }
+    }
+
+    render(h(KeepAlive, keepAliveProps, {
+      default: () => h(A1, { key: "a1" })
+    }), app)
+
+    setTimeout(() => {
+      render(h(KeepAlive, keepAliveProps, {
+        default: () => h(A2, { key: "a2" })
+      }), app)
+    }, 1000)
+
+    setTimeout(() => {
+      render(h(KeepAlive, keepAliveProps, {
+        default: () => h(A1, { key: "a1" })
+      }), app)
+    }, 2000)
+  </script>
+</body>
+
+</html>

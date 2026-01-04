@@ -8,4 +8,5 @@ export * from "./apiLifecycle";
 export * from "./apiProvide";
 export * from "./components/Teleport";
 export * from "./components/Transition";
-// export * from "./components/KeepAlive";
+export * from "./components/KeepAlive";
+// export * from "./defineAsyncComponent";

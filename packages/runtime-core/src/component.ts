@@ -18,6 +18,7 @@ export const createComponentInstance = (vnode: any, parent) => {
     exposed: null, // 暴露给外部的属性
     parent, // 父组件实例
     provides: parent ? parent.provides : Object.create(null), // 依赖注入
+    ctx: {} as any, // 如果是keep-alive组件，就将dom api放入到这个属性上
   }
 
   return instance
