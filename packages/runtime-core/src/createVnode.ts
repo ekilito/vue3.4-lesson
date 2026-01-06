@@ -57,26 +57,36 @@ export const createVnode = (type, props, children?, patchFlag?) => {
   return vnode;
 };
 
+// 靶向更新
+// block 有收集虚拟节点的功能
 let currentBlock = null;
+
 export function openBlock() {
+  // 创建 block
   currentBlock = []; // 用于收集动态节点的
 }
+
 export function closeBlock() {
+  // 关闭 block
   currentBlock = null;
 }
+
 export function setupBlock(vnode) {
   vnode.dynamicChildren = currentBlock; // 当前elementBlock会收集子节点，用当前block来收集
   closeBlock();
   return vnode;
 }
+
 // block 有收集虚拟节点的功能
 export function createElementBlock(type, props, children, patchFlag?) {
+  // 创建 block 元素
   const vnode = createVnode(type, props, children, patchFlag);
   // if (currentBlock) {
   //   currentBlock.push(vnode);
   // }
   return setupBlock(vnode);
 }
+
 export function toDisplayString(value) {
   return isString(value)
     ? value
@@ -86,4 +96,5 @@ export function toDisplayString(value) {
         ? JSON.stringify(value)
         : String(value);
 }
+
 export { createVnode as createElementVNode };
