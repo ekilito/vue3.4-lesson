@@ -24,9 +24,9 @@
 
     const MyComponent = {
       setup() {
-        const state = reactive({ name: "kilito" });
+        const state = reactive({ flag: true, a: 100 });
         setTimeout(() => {
-          state.name = "hello kilito";
+          state.flag = false;
         }, 1000);
         return {
           ...toRefs(state),
@@ -35,17 +35,32 @@
       render(_ctx) {
         // proxyRefs
         const vnode =
-          (_openBlock(),
-            _createElementBlock("div", null, [
-              _createElementVNode("h1", null, "Hello"),
-              _createElementVNode("span", null, _toDisplayString(_ctx.name), 1 /* TEXT */), // 模版编译vue会帮我们做这个标记
-            ]));
-        console.log("vnode", vnode);
+          (_openBlock(), _createElementBlock("div", null, [
+            (_ctx.flag)
+              ? (_openBlock(), _createElementBlock("p", { key: 0 }, [
+                _createElementVNode("span", null, _toDisplayString(_ctx.a), 1 /* TEXT */)
+              ]))
+              : (_openBlock(), _createElementBlock("div", { key: 1 }, [
+                _createElementVNode("span", null, _toDisplayString(_ctx.a), 1 /* TEXT */)
+              ]))
+          ]))
+        console.log("vnode block:", vnode);
         return vnode;
       },
     };
     render(h(MyComponent), app);
+
   </script>
+
+  <div>
+    <p v-if="flag">
+      <span>{{a}}</span>
+    </p>
+    <div v-else>
+      <span>{{a}}</span>
+    </div>
+  </div>
+
 </body>
 
 </html>
